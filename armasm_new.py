@@ -4,6 +4,7 @@
 import helpers
 import size
 import asm_dataproc
+import asm_directive
 
 class Sourceline:
     #line #the full string
@@ -206,7 +207,7 @@ returns 0 on success, -1 on failure"""
         """self must be processed by replace_pseudoinstructions
 sets self.hexcode to the binary machine code corresponding to self
 returns 0 on success, -1 on failure"""
-        fullname = name+flags
+        fullname = self.opname+self.flags
         if helpers.is_dataprocop(fullname):
             err = asm_dataproc.check_dataprocop(self.opname, self.flags, self.condcode, self.operands)
             if len(err) > 0:
@@ -220,9 +221,15 @@ returns 0 on success, -1 on failure"""
                 return -1
             self.hexcode = asm_directive.encode_directive(self.opname, self.operands, self.address)
         else:
-            self.errmsg = 'UNIMPLEMENTED'
-            return -1
+            self.hexcode = self.length*b'\x00'#TODO: REMOVE THIS. DEBUGGING ONLY
+            ##self.errmsg = 'UNIMPLEMENTED'
+            ##return -1
         if len(self.hexcode) != self.length:
             self.errmsg = "Precalculated length (%i bytes) and real length (%i bytes) don't match" % (self.length, len(enc))
             return -1
         return 0
+
+    def get_hex(self):
+        """self must be processed by assemble
+returns self.hexcode"""
+        return self.hexcode

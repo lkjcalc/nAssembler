@@ -98,8 +98,22 @@ returns -1 on failure, 0 on success"""
     if numerrs != 0:
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
-    
-    print([c.line for c in code])
+
+    #stage 5: check syntax, encode all instructions and directives
+    for i, c in enumerate(code):
+        if c.assemble() == -1:
+            if len(c.errmsg) > 0:
+                printerror(infile, i, c.line, c.errmsg)
+            else:
+                printerror(infile, i, c.line, 'unknown error in replace_pseudoinstructions')
+            numerrs += 1
+            continue
+    if numerrs != 0:
+        printmsg('Stopping assembler: %i Error(s)' % (numerrs))
+        return -1
+
+    for i, c in enumerate(code):
+        print(''.join(['%.2x' % (b) for b in c.get_hex()]), c.line)
     
 
 def cmd_assemble():

@@ -1,3 +1,40 @@
+def is_valid_numeric_literal(s):
+    """returns True iff '#'+s is a valid immediate value"""
+    return is_valid_imval('#'+s)
+
+def numeric_literal_to_int(s):
+    """returns value of the numeric literal s
+s must be a syntactically valid numeric literal, or the result is meaningless"""
+    return imval_to_int('#'+s)
+
+def bigendian_to_littleendian(b):
+    """converts bytes object b from big endian to little endian
+len(b)%4 must be 0"""
+    outstr = b''
+    if len(b) % 4:
+        return b''
+    for i in range(0, len(b), 4):
+        outstr += b[i:i+4][::-1]
+    return outstr
+
+def rotateleft32(n, r):
+    n &= 0xFFFFFFFF
+    r %= 32
+    n <<= r
+    carry = (n & (0xFFFFFFFF << 32)) >> 32
+    n &= 0xFFFFFFFF
+    n += carry
+    return n
+
+def isxdigit(s):
+    """returns True iff s contains at least one char and only xdigits (0...9A...Fa...f)"""
+    if len(s) == 0:
+        return False
+    for c in s:
+        if not c in '0123456789ABCDEFabcdef':
+            return False
+    return True
+
 def is_shiftname(s):
     """returns True iff s is a shiftname (excluding RRX)"""
     shiftnamelist = ['ASL', 'LSL', 'LSR', 'ASR', 'ROR']
@@ -19,7 +56,7 @@ def is_valid_imval(s):
         return True
     if s.startswith('#0b') and len(s) >= 4 and isbindigit(s[3:]):
         return True
-    if s[1] != '0' and isdigit(s[1:]):
+    if s[1] != '0' and str.isdigit(s[1:]):
         return True
     return False
 

@@ -1,14 +1,5 @@
 import helpers
 
-def rotateleft32(n, r):
-    n &= 0xFFFFFFFF
-    r %= 32
-    n <<= r
-    carry = (n & (0xFFFFFFFF << 32)) >> 32
-    n &= 0xFFFFFFFF
-    n += carry
-    return n
-
 def check_op2(op2):
     """Checks Op2 of a dataprocop
 Returns an error string if invalid, empty string otherwise"""
@@ -19,9 +10,9 @@ Returns an error string if invalid, empty string otherwise"""
         if not helpers.is_valid_imval(operands[0]):#op2 = immediate
             return 'Invalid op2 (must be of the form "reg" or "reg, shift" or "immediate value")'
         #constant must be expressable as "8bit unsigned int" rotated right by 2*n with n an "4 bit unsigned int"
-        const = imval_to_int(operands[0])
+        const = helpers.imval_to_int(operands[0])
         for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
-            if rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
+            if helpers.rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
                 return ''
         return 'This immediate value cannot be encoded as op2'
     if len(operands) != 2:
@@ -72,21 +63,26 @@ def encode_dataprocop(name, flags, condcode, operands):
     """check_dataprocop must be called before this
 Encodes the instruction and returns it as a bytes object"""
     operands = [x.strip() for x in operands.split(',')]
-    sflag = (suffixes == 'S')
-    if helpers.is_dataproc_fullop(opname):
-        dest = get_reg_num(operands[0])
-        op1 = get_reg_num(operands[1])
-        op2 = encode_op2(','.join(operands[2:]))
-    elif helpers.is_dataproc_testop(opname):
+    sflag = (flags == 'S')
+    if helpers.is_dataproc_fullop(name):
+        dest = helpers.get_reg_num(operands[0])
+        op1 = helpers.get_reg_num(operands[1])
+        (iflag, op2) = encode_op2(','.join(operands[2:]))
+    elif helpers.is_dataproc_testop(name):
         dest = 0
-        op1 = get_reg_num(operands[0])
-        op2 = encode_op2(','.join(operands[1:]))
+        op1 = helpers.get_reg_num(operands[0])
+        (iflag, op2) = encode_op2(','.join(operands[1:]))
         sflag = True
     else:#movop
         dest = get_reg_num(operands[0])
         op1 = 0
-        op2 = encode_op2(','.join(operands[1:]))
-    return (condcode << 28) | (op2[0] << 25) | (get_dataprocop_num(opname) << 21) | (sflag << 20) | (op1 << 16) | (dest << 12) | op2[1]
+        (iflag, op2) = encode_op2(','.join(operands[1:]))
+    ccval = helpers.get_condcode_value(condcode)
+    dpn = helpers.get_dataprocop_num(name)
+    return helpers.bigendian_to_littleendian(bytes([(ccval << 4) | (iflag << 1) | (dpn >> 3),
+                                                    ((dpn & 0x7) << 5) | (sflag << 4) | op1,
+                                                    (dest << 4) | ((op2 & 0xF) >> 8),
+                                                    op2 & 0xFF]))
 
 def encode_op2(op2):
     """check_op2 must be called before this
@@ -104,8 +100,8 @@ Encodes the op2. Returns a tuple of I-flag and an integer containing the other 1
             iflag = True
             imval = helpers.imval_to_int(operands[0])
             for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
-                if rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
-                    op2field = (i//2 << 8) | rotateleft32(imval, i)
+                if helpers.rotateleft32(imval, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
+                    op2field = (i//2 << 8) | helpers.rotateleft32(imval, i)
                     break
     else:
         iflag = False

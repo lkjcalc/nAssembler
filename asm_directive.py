@@ -8,9 +8,9 @@ Returns an error string if invalid, empty string otherwise"""
         if len(operands) == 0:
             return 'Missing operands after DCD: expected at least one immediate value'
         for op in operands:
-            if not helpers.is_valid_imval(op):
-                return 'Invalid immediate value'
-            i = helpers.imval_to_int(op)
+            if not helpers.is_valid_numeric_literal(op):
+                return 'Invalid numeric literal'
+            i = helpers.numeric_literal_to_int(op)
             if i > (2**32)-1:
                 return 'Numeric literal outside of 32bit range: greater than 2^32-1'
             if i < -(2**31):
@@ -22,14 +22,14 @@ Returns an error string if invalid, empty string otherwise"""
             return ''
         if len(operands) > 2:
             return 'Only two arguments are allowed: alignment, offset'
-        if not helpers.is_valid_imval(operands[0]):
+        if not helpers.is_valid_numeric_literal(operands[0]):
             return 'Invalid numeric literal'
-        alignment = helpers.imval_to_int(operands[0])
+        alignment = helpers.numeric_literal_to_int(operands[0])
         if alignment == 0 or (alignment & (alignment-1)) != 0:
             return 'Only powers of two are allowed as alignment boundaries'
         if len(operands) == 1:
             return ''
-        if not helpers.is_valid_imval(operands[1]):
+        if not helpers.is_valid_numeric_literal(operands[1]):
             return 'Invalid numeric literal'
         return ''
     if name == 'DCB':
@@ -48,9 +48,9 @@ Returns an error string if invalid, empty string otherwise"""
                 for c in op:
                     c = ord(c)
                     if c < 0 or c > 255:
-                        return 'Invalid character
-            elif helpers.is_valid_imval(op):
-                i = helpers.imval_to_int(op)
+                        return 'Invalid character'
+            elif helpers.is_valid_numeric_literal(op):
+                i = helpers.numeric_literal_to_int(op)
                 if i < -128:
                     return 'Numeric literal outside of 8bit range: lower than -2^7'
                 if i > 255:
@@ -68,9 +68,9 @@ Encodes the directive and returns it as a bytes object"""
         operands = [x.strip() for x in operands.split(',')]
         encoded = b''
         if name == 'DCD':
-            encoded += b'\x00'*((4 - (currentaddress % 4)) % 4)#align
+            encoded += b'\x00'*((4 - (address % 4)) % 4)#align
         for op in operands:
-            i = helpers.imval_to_int(op)
+            i = helpers.numeric_literal_to_int(op)
             encoded += helpers.bigendian_to_littleendian(bytes([(i>>24)&0xFF, (i>>16)&0xFF, (i>>8)&0xFF, i&0xFF]))
         return encoded
     if name == 'ALIGN':
@@ -78,13 +78,13 @@ Encodes the directive and returns it as a bytes object"""
         if len(operands) == 0 or len(operands[0]) == 0:#implicit alignment to 4 bytes
             alignment = 4
         else:
-            alignment = helpers.imval_to_int(operands[0])
+            alignment = helpers.numeric_literal_to_int(operands[0])
         if len(operands) < 2:
             offset = 0
         else:
-            offset = helpers.imval_to_int(operands[1])
+            offset = helpers.numeric_literal_to_int(operands[1])
         padsize = ((alignment - ((address+alignment-offset) % alignment)) % alignment)
-        return b'\x00'*padsize
+        return padsize*b'\x00'
     if name == 'DCB':
         operands = [x.strip() for x in operands.split(',')]
         encoded = b''
@@ -94,8 +94,8 @@ Encodes the directive and returns it as a bytes object"""
                 for c in op:
                     c = ord(c)
                     encoded += bytes([c])
-            else:#is valid imval because has to be checked before
-                i = helpers.imval_to_int(op)
+            else:#is valid numeric literal because has to be checked before
+                i = helpers.numeric_literal_to_int(op)
                 encoded += bytes([i])
         return encoded
     return b''#should never be reached
