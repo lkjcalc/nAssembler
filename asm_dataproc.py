@@ -79,10 +79,8 @@ Encodes the instruction and returns it as a bytes object"""
         (iflag, op2) = encode_op2(','.join(operands[1:]))
     ccval = helpers.get_condcode_value(condcode)
     dpn = helpers.get_dataprocop_num(name)
-    return helpers.bigendian_to_littleendian(bytes([(ccval << 4) | (iflag << 1) | (dpn >> 3),
-                                                    ((dpn & 0x7) << 5) | (sflag << 4) | op1,
-                                                    (dest << 4) | ((op2 & 0xF) >> 8),
-                                                    op2 & 0xFF]))
+    encoded = helpers.encode_32bit([(28, 4, ccval), (25, 1, iflag), (21, 4, dpn), (20, 1, sflag), (16, 4, op1), (12, 4, dest), (0, 12, op2)])
+    return helpers.bigendian_to_littleendian(encoded)
 
 def encode_op2(op2):
     """check_op2 must be called before this

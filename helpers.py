@@ -1,3 +1,13 @@
+def encode_32bit(l):
+    """encodes an instruction (32 bit only) using l to determine contents and positions
+l must be a list of tuples of 3 integers: (offset, length, value). LSB has offset 0
+attention: does not change endianness
+returns the encoded instruction as a bytes object"""
+    word = 0
+    for e in l:
+        word = word | ((e[2] & ((1 << e[1])-1)) << e[0])
+    return bytes([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])
+
 def is_valid_numeric_literal(s):
     """returns True iff '#'+s is a valid immediate value"""
     return is_valid_imval('#'+s)

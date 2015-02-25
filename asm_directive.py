@@ -71,7 +71,7 @@ Encodes the directive and returns it as a bytes object"""
             encoded += b'\x00'*((4 - (address % 4)) % 4)#align
         for op in operands:
             i = helpers.numeric_literal_to_int(op)
-            encoded += helpers.bigendian_to_littleendian(bytes([(i>>24)&0xFF, (i>>16)&0xFF, (i>>8)&0xFF, i&0xFF]))
+            encoded += helpers.bigendian_to_littleendian(helpers.encode_32bit([(0, 32, i)]))
         return encoded
     if name == 'ALIGN':
         operands = [x.strip() for x in operands.split(',')]
