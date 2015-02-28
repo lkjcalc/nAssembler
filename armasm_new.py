@@ -233,6 +233,12 @@ returns 0 on success, -1 on failure"""
                 self.errmsg = err
                 return -1
             self.hexcode = asm_misc.encode_psrtransop(self.opname, self.condcode, self.operands)
+        elif helpers.is_swiop(fullname):
+            err = asm_misc.check_swiop(self.opname, self.operands)
+            if len(err) > 0:
+                self.errmsg = err
+                return -1
+            self.hexcode = asm_misc.encode_swiop(self.opname, self.condcode, self.operands)
         else:
             self.hexcode = self.length*b'\x00'#TODO: REMOVE THIS. DEBUGGING ONLY
             ##self.errmsg = 'UNIMPLEMENTED'

@@ -4,6 +4,10 @@ import helpers
 def check_branchop(name, operands, address, labeldict):
     """Assumes valid name, valid name+flags combination, valid condcode
 checks the operands and returns an error string if invalid, empty string otherwise"""
+    operands = [x.strip() for x in operands.split(',')]
+    if len(operands) != 1:
+        return 'Invalid number of operands: expected 1, got %i' % (len(operands))
+    operands = operands[0]
     if name == 'BX':
         operands = operands.strip()
         if not helpers.is_reg(operands):
@@ -27,14 +31,13 @@ checks the operands and returns an error string if invalid, empty string otherwi
 def encode_branchop(name, condcode, operands, address, labeldict):
     """check_branchop must be called before this
 encodes the instruction and returns it as a bytes object"""
+    operands = operands.strip()
     if name == 'BX':
-        operands = operands.strip()
         rn = helpers.get_reg_num(operands)
         ccval = helpers.get_condcode_value(condcode)
         encoded = helpers.encode_32bit([(28, 4, ccval), (4, 24, 0x12FFF1), (0, 4, rn)])
         return helpers.bigendian_to_littleendian(encoded)
     else:
-        operands = operands.strip()
         offset = labeldict[operands] - address - 8
         offset >>= 2
         offset = offset + (offset < 0)*(1 << 24)#correction for negative offsets
@@ -43,11 +46,13 @@ encodes the instruction and returns it as a bytes object"""
         encoded = helpers.encode_32bit([(28, 4, ccval), (25, 3, 0x5), (24, 1, lflag), (0, 24, offset)])
         return helpers.bigendian_to_littleendian(encoded)
 
-def check_psrtransop(opname, operands):
+def check_psrtransop(name, operands):
     """Assumes valid name, valid name+flags combination, valid condcode
 checks the operands and returns an error string if invalid, empty string otherwise"""
     operands = [x.strip() for x in operands.split(',')]
-    if opname == 'MRS':
+    if len(operands) != 2:
+        return 'Invalid number of operands: expected 2, got %i' % (len(operands))
+    if name == 'MRS':
         if not helpers.is_reg(operands[0]):
             return 'Invalid operand: expected register'
         rd = helpers.get_reg_num(operands[0])
@@ -76,6 +81,8 @@ checks the operands and returns an error string if invalid, empty string otherwi
         return ''
 
 def encode_psrtransop(name, condcode, operands):
+    """check_psrtransop must be called before this
+encodes the instruction and returns it as a bytes object"""
     operands = [x.strip() for x in operands.split(',')]
     if name == 'MRS':
         rd = helpers.get_reg_num(operands[0])
@@ -105,3 +112,28 @@ def encode_psrtransop(name, condcode, operands):
         ccval = helpers.get_condcode_value(condcode)
         encoded = helpers.encode_32bit([(28, 4, ccval), (25, 1, iflag), (23, 2, 0x2), (22, 1, spsrflag), (17, 5, 0x14), (16, 1, allflag), (12, 4, 0xF), (0, 12, op2field)])
         return helpers.bigendian_to_littleendian(encoded)
+
+def check_swiop(name, operands):
+    """Assumes valid name, valid name+flags combination, valid condcode
+checks the operands and returns an error string if invalid, empty string otherwise"""
+    operands = [x.strip() for x in operands.split(',')]
+    if len(operands) != 1:
+        return 'Invalid number of operands: expected 1, got %i' % (len(operands))
+    operands = operands[0]
+    if not helpers.is_valid_imval(operands):
+        return 'Invalid operand: expected immediate value'
+    com = helpers.imval_to_int(operands)
+    if com > 2**24-1:
+        return 'Operand greater than 2^24-1'
+    if com < -2**23:
+        return 'Operand lower than -2^23'
+    return ''
+
+def encode_swiop(name, condcode, operands):
+    """check_swiop must be called before this
+encodes the instruction and returns it as a bytes object"""
+    operands = operands.strip()
+    ccval = helpers.get_condcode_value(condcode)
+    com = helpers.imval_to_int(operands)
+    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 4, 0xF), (0, 24, com)])
+    return helpers.bigendian_to_littleendian(encoded)
