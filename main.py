@@ -101,7 +101,7 @@ returns -1 on failure, 0 on success"""
 
     #stage 5: check syntax, encode all instructions and directives
     for i, c in enumerate(code):
-        if c.assemble() == -1:
+        if c.assemble(labeldict) == -1:
             if len(c.errmsg) > 0:
                 printerror(infile, i, c.line, c.errmsg)
             else:

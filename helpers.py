@@ -1,3 +1,28 @@
+def encode_imval(s):
+    """s must be a syntactically valid, encodable immediate value
+returns the imval encoded as in psrtrans/dataproc"""
+    imval = imval_to_int(s)
+    op2field = 0
+    for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
+        if rotateleft32(imval, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
+            op2field = (i//2 << 8) | rotateleft32(imval, i)
+            break
+    return op2field
+
+def is_expressable_imval(s):
+    """s must be a syntactically valid immediate value
+returns True iff s can be expressed as an 8 bit imval and 4 bit shift (like in psrtrans or dataproc)"""
+    const = helpers.imval_to_int(s)
+    for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
+        if rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
+            return True
+    return False
+
+def is_psr(s):
+    """returns True iff s is the name of a cpsr or spsr"""
+    psrlist = ['CPSR', 'SPSR', 'CPSR_ALL', 'SPSR_ALL', 'SPSR_FLG', 'CPSR_FLG']
+    return s.upper() in psrlist
+
 def encode_32bit(l):
     """encodes an instruction (32 bit only) using l to determine contents and positions
 l must be a list of tuples of 3 integers: (offset, length, value). LSB has offset 0
@@ -48,7 +73,7 @@ def isxdigit(s):
 def is_shiftname(s):
     """returns True iff s is a shiftname (excluding RRX)"""
     shiftnamelist = ['ASL', 'LSL', 'LSR', 'ASR', 'ROR']
-    return s in shiftnamelist
+    return s.upper() in shiftnamelist
 
 def is_valid_imval(s):
     """returns True iff s is a syntactically valid immediate value"""
@@ -107,7 +132,7 @@ Currently, only assembly "keywords" are reserved"""
 
 def is_otherkeyword(s):
     """returns True iff s is another keyword than an opname, directive or reg, False otherwise"""
-    if s.upper() in ['LSL', 'LSR', 'ASR', 'ROR', 'RRX']:
+    if s.upper() in ['LSL', 'LSR', 'ASL', 'ASR', 'ROR', 'RRX']:
         return True
     if s.upper() in ['P0', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15']:
         return True
@@ -130,8 +155,8 @@ def is_reg(s):
 def get_condcode_value(s):
     """returns the number corresponding to s or -1 if s is not a valid condition code"""
     condcodedict = {'EQ' : 0, 'NE' : 1, 'HS' : 2, 'CS' : 2, 'LO' : 3, 'CC' : 3, 'MI' : 4, 'PL' : 5, 'VS' : 6, 'VC' : 7, 'HI' : 8, 'LS' : 9, 'GE' : 10, 'LT' : 11, 'GT' : 12, 'LE' : 13, 'AL' : 14}
-    if s in condcodedict:
-        return condcodedict[s]
+    if s.upper() in condcodedict:
+        return condcodedict[s.upper()]
     return -1
 
 def is_condcode(s):
@@ -140,7 +165,7 @@ def is_condcode(s):
 
 def is_directive(s):
     directivelist = ['DCD', 'DCDU', 'ALIGN', 'DCB']
-    return s in directivelist
+    return s.upper() in directivelist
 
 def is_dataproc_fullop(s):
     fulloplist = ['ADC', 'ADD', 'RSB', 'RSC', 'SBC', 'SUB', 'AND', 'BIC', 'EOR', 'ORR']
@@ -156,54 +181,54 @@ def is_dataproc_movop(s):
 
 def get_dataprocop_num(s):
     dataprocopdict = {'ADC' : 5,  'ADD' : 4, 'RSB' : 3, 'RSC' : 7, 'SBC' : 6, 'SUB' : 2, 'AND' : 0, 'BIC' : 14, 'EOR' : 1, 'ORR' : 12, 'CMP' : 10, 'CMN' : 11, 'TEQ' : 9, 'TST' : 8, 'MOV' : 13, 'MVN' : 15}
-    if s in dataprocopdict:
-        return dataprocopdict[s]
+    if s.upper() in dataprocopdict:
+        return dataprocopdict[s.upper()]
     return -1
 
 def is_dataprocop(s):
     dataprocoplist = ['ADC', 'ADD', 'RSB', 'RSC', 'SBC', 'SUB', 'AND', 'BIC', 'EOR', 'ORR', 'CMP', 'CMN', 'TEQ', 'TST', 'MOV', 'MVN',
                     'ADCS', 'ADDS', 'RSBS', 'RSCS', 'SBCS', 'SUBS', 'ANDS', 'BICS', 'EORS', 'ORRS', 'MOVS', 'MVNS']
-    return s in dataprocoplist
+    return s.upper() in dataprocoplist
 
 def is_branchop(s):
     branchoplist = ['BX', 'B', 'BL']
-    return s in branchoplist
+    return s.upper() in branchoplist
 
 def is_psrtransop(s):
     psrtransoplist = ['MSR', 'MRS']
-    return s in psrtransoplist
+    return s.upper() in psrtransoplist
 
 def is_mulop(s):
     muloplist = ['MUL', 'MLA', 'MULS', 'MLAS']
-    return s in muloplist
+    return s.upper() in muloplist
 
 def is_longmulop(s):
     longmuloplist = ['UMULL', 'SMULL', 'UMLAL', 'SMLAL', 'UMULLS', 'SMULLS', 'UMLALS', 'SMLALS']
-    return s in longmuloplist
+    return s.upper() in longmuloplist
 
 def is_swiop(s):
     swioplist = ['SWI', 'SVC']
-    return s in swioplist
+    return s.upper() in swioplist
 
 def is_singledatatransop(s):
     singledatatransoplist = ['LDR', 'STR', 'LDRB', 'STRB', 'LDRT', 'STRT', 'LDRBT', 'STRBT']
-    return s in singledatatransoplist
+    return s.upper() in singledatatransoplist
 
 def is_halfsigneddatatransop(s):
     halfsigneddatatransoplist = ['LDRH', 'LDRSH', 'LDRSB', 'STRH']
-    return s in halfsigneddatatransoplist
+    return s.upper() in halfsigneddatatransoplist
 
 def is_swapop(s):
     swapoplist = ['SWP', 'SWPB']
-    return s in swapoplist
+    return s.upper() in swapoplist
 
 def is_blockdatatransop(s):
     blockdatatransoplist = ['LDMFD', 'LDMED', 'LDMFA', 'LDMEA', 'LDMIA', 'LDMIB', 'LDMDA', 'LDMDB', 'STMFD', 'STMED', 'STMFA', 'STMEA', 'STMIA', 'STMIB', 'STMDA', 'STMDB']
-    return s in blockdatatransoplist
+    return s.upper() in blockdatatransoplist
 
 def is_coprocregtransop(s):
     coprocregtransoplist = ['MRC', 'MCR']
-    return s in coprocregtransoplist
+    return s.upper() in coprocregtransoplist
 
 def is_opname(s):
     """returns True iff s is a valid operation or directive name (full name, i.e. with flags!), False otherwise"""

@@ -10,11 +10,9 @@ Returns an error string if invalid, empty string otherwise"""
         if not helpers.is_valid_imval(operands[0]):#op2 = immediate
             return 'Invalid op2 (must be of the form "reg" or "reg, shift" or "immediate value")'
         #constant must be expressable as "8bit unsigned int" rotated right by 2*n with n an "4 bit unsigned int"
-        const = helpers.imval_to_int(operands[0])
-        for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
-            if helpers.rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
-                return ''
-        return 'This immediate value cannot be encoded as op2'
+        if not is_expressable_imval(operands[0]):
+            return 'This immediate value cannot be encoded as op2'
+        return ''
     if len(operands) != 2:
         return 'Invalid op2 (must be of the form "reg" or "reg, shift" or "immediate value")'
     #->must be of form "reg, shift"
@@ -42,7 +40,7 @@ Returns an error string if invalid, empty string otherwise"""
         return 'Shift by 32 is only allowed for LSR'
     return 'Invalid immediate shift amount. Must be 0 <= amount <= 31 (or 32 for special LSR, ASR)'    
 
-def check_dataprocop(name, flags, condcode, operands):
+def check_dataprocop(name, operands):
     """Assumes valid name, valid name+flags combination, valid condcode
 Checks the operands and returns an error string if invalid, empty string otherwise"""
     operands = [x.strip() for x in operands.split(',')]
@@ -96,11 +94,7 @@ Encodes the op2. Returns a tuple of I-flag and an integer containing the other 1
             shiftbyreg = False
         else:#op2 = immediate value
             iflag = True
-            imval = helpers.imval_to_int(operands[0])
-            for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
-                if helpers.rotateleft32(imval, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
-                    op2field = (i//2 << 8) | helpers.rotateleft32(imval, i)
-                    break
+            op2field = helpers.encode_imval(operands[0])
     else:
         iflag = False
         reg = helpers.get_reg_num(operands[0])
