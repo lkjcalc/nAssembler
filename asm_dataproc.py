@@ -10,7 +10,7 @@ Returns an error string if invalid, empty string otherwise"""
         if not helpers.is_valid_imval(operands[0]):#op2 = immediate
             return 'Invalid op2 (must be of the form "reg" or "reg, shift" or "immediate value")'
         #constant must be expressable as "8bit unsigned int" rotated right by 2*n with n an "4 bit unsigned int"
-        if not is_expressable_imval(operands[0]):
+        if not helpers.is_expressable_imval(operands[0]):
             return 'This immediate value cannot be encoded as op2'
         return ''
     if len(operands) != 2:

@@ -228,11 +228,11 @@ returns 0 on success, -1 on failure"""
                 return -1
             self.hexcode = asm_misc.encode_branchop(self.opname, self.condcode, self.operands, self.address, labeldict)
         elif helpers.is_psrtransop(fullname):
-            err = arm_misc.check_psrtransop(self.opname, self.operands)
+            err = asm_misc.check_psrtransop(self.opname, self.operands)
             if len(err) > 0:
                 self.errmsg = err
                 return -1
-            self.hexcode = arm_misc.encode_psrtransop(self.opname, self.condcode, self.operands)
+            self.hexcode = asm_misc.encode_psrtransop(self.opname, self.condcode, self.operands)
         else:
             self.hexcode = self.length*b'\x00'#TODO: REMOVE THIS. DEBUGGING ONLY
             ##self.errmsg = 'UNIMPLEMENTED'

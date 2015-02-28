@@ -12,7 +12,7 @@ returns the imval encoded as in psrtrans/dataproc"""
 def is_expressable_imval(s):
     """s must be a syntactically valid immediate value
 returns True iff s can be expressed as an 8 bit imval and 4 bit shift (like in psrtrans or dataproc)"""
-    const = helpers.imval_to_int(s)
+    const = imval_to_int(s)
     for i in range(0, 32, 2):#range is [0, 2, 4, ..., 30]
         if rotateleft32(const, i) < 256:#-> ans ror i = const with ans 8bit and i 4bit
             return True

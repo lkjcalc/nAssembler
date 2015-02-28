@@ -60,7 +60,7 @@ checks the operands and returns an error string if invalid, empty string otherwi
         if not helpers.is_psr(operands[0]):
             return 'Invalid operand: expected psr'
         if not operands[0].upper().endswith('FLG'):
-            if not helpers.is_reg_(operands[1]):#immediate is only allowed for PSR_FLG
+            if not helpers.is_reg(operands[1]):#immediate is only allowed for PSR_FLG
                 return 'Invalid operand: expected register'
             if helpers.get_reg_num(operands[1]) == 15:
                 return 'PC is not allowed here'
@@ -71,13 +71,13 @@ checks the operands and returns an error string if invalid, empty string otherwi
             return ''
         if not helpers.is_valid_imval(operands[1]):
             return 'Invalid operand: expected register or immediate value'
-        if not is_expressable_imval(operands[1]):
+        if not helpers.is_expressable_imval(operands[1]):
             return 'This immediate value cannot be encoded'
         return ''
 
 def encode_psrtransop(name, condcode, operands):
     operands = [x.strip() for x in operands.split(',')]
-    if opname == 'MRS':
+    if name == 'MRS':
         rd = helpers.get_reg_num(operands[0])
         if operands[1].upper()[0] == 'C':#CPSR
             spsrflag = False

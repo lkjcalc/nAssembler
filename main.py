@@ -112,9 +112,21 @@ returns -1 on failure, 0 on success"""
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
+    #stage 6: write output to file
+    binary = b''
+    for c in code:
+        binary += c.get_hex()
+    f = open(outfile, 'wb')
+    f.write(b'PRG\x00')
+    f.write(binary)
+    f.close()
+
+    #debug cmdline output:
     for i, c in enumerate(code):
         print(''.join(['%.2x' % (b) for b in c.get_hex()]), c.line)
     
+    for i, c in enumerate(code):
+        print(''.join(['%.2x' % (b) for b in c.get_hex()]), end = ' ')
 
 def cmd_assemble():
     """gets the arguments from the command line parameters"""
