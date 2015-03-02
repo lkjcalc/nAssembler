@@ -6,6 +6,7 @@ import size
 import asm_dataproc
 import asm_directive
 import asm_misc
+import asm_mul
 
 class Sourceline:
     #line #the full string
@@ -239,6 +240,18 @@ returns 0 on success, -1 on failure"""
                 self.errmsg = err
                 return -1
             self.hexcode = asm_misc.encode_swiop(self.opname, self.condcode, self.operands)
+        elif helpers.is_mulop(fullname):
+            err = asm_mul.check_mulop(self.opname, self.operands)
+            if len(err) > 0:
+                self.errmsg = err
+                return -1
+            self.hexcode = asm_mul.encode_mulop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_longmulop(fullname):
+            err = asm_mul.check_longmulop(self.opname, self.operands)
+            if len(err) > 0:
+                self.errmsg = err
+                return -1
+            self.hexcode = asm_mul.encode_longmulop(self.opname, self.flags, self.condcode, self.operands)        
         else:
             self.hexcode = self.length*b'\x00'#TODO: REMOVE THIS. DEBUGGING ONLY
             ##self.errmsg = 'UNIMPLEMENTED'
