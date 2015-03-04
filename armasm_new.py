@@ -7,6 +7,7 @@ import asm_dataproc
 import asm_directive
 import asm_misc
 import asm_mul
+import asm_cpregtrans
 
 class Sourceline:
     #line #the full string
@@ -205,59 +206,67 @@ self must be processed by set_length_and_address
 returns 0 on success, -1 on failure"""
         return 0
 
+    def _check_syntax(self, labeldict):
+        """self must be processed by replace_pseudoinstructions
+returns error message string, empty string if no error"""
+        fullname = self.opname+self.flags
+        if helpers.is_directive(fullname):
+            return asm_directive.check_directive(self.opname, self.operands)
+        elif helpers.is_dataprocop(fullname):
+            return asm_dataproc.check_dataprocop(self.opname, self.operands)
+        elif helpers.is_branchop(fullname):
+            return asm_misc.check_branchop(self.opname, self.operands, self.address, labeldict)
+        elif helpers.is_psrtransop(fullname):
+            return asm_misc.check_psrtransop(self.opname, self.operands)
+        elif helpers.is_swiop(fullname):
+            return asm_misc.check_swiop(self.opname, self.operands)
+        elif helpers.is_mulop(fullname):
+            return asm_mul.check_mulop(self.opname, self.operands)
+        elif helpers.is_longmulop(fullname):
+            return asm_mul.check_longmulop(self.opname, self.operands)
+        elif helpers.is_coprocregtransop(fullname):
+            return asm_cpregtrans.check_coprocregtransop(self.opname, self.operands)
+        else:
+            return ''
+        #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
+        #    return 'Unknown or not implemented instruction (failed in _check_syntax)'
+
+    def _encode_line(self, labeldict):
+        """self must be processed by _check_syntax
+returns encoded line as a bytes object"""
+        fullname = self.opname+self.flags
+        if helpers.is_directive(fullname):
+            return asm_directive.encode_directive(self.opname, self.operands, self.address)
+        elif helpers.is_dataprocop(fullname):
+            return asm_dataproc.encode_dataprocop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_branchop(fullname):
+            return asm_misc.encode_branchop(self.opname, self.condcode, self.operands, self.address, labeldict)
+        elif helpers.is_psrtransop(fullname):
+            return asm_misc.encode_psrtransop(self.opname, self.condcode, self.operands)
+        elif helpers.is_swiop(fullname):
+            return asm_misc.encode_swiop(self.opname, self.condcode, self.operands)
+        elif helpers.is_mulop(fullname):
+            return asm_mul.encode_mulop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_longmulop(fullname):
+            return asm_mul.encode_longmulop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_coprocregtransop(fullname):
+            return asm_cpregtrans.encode_coprocregtransop(self.opname, self.condcode, self.operands)
+        else:
+            return b'\00'*self.length
+        #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
+        #    return b''
+        
     def assemble(self, labeldict):
         """self must be processed by replace_pseudoinstructions
 sets self.hexcode to the binary machine code corresponding to self
 returns 0 on success, -1 on failure"""
-        fullname = self.opname+self.flags
-        if helpers.is_dataprocop(fullname):
-            err = asm_dataproc.check_dataprocop(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_dataproc.encode_dataprocop(self.opname, self.flags, self.condcode, self.operands)
-        elif helpers.is_directive(fullname):
-            err = asm_directive.check_directive(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_directive.encode_directive(self.opname, self.operands, self.address)
-        elif helpers.is_branchop(fullname):
-            err = asm_misc.check_branchop(self.opname, self.operands, self.address, labeldict)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_misc.encode_branchop(self.opname, self.condcode, self.operands, self.address, labeldict)
-        elif helpers.is_psrtransop(fullname):
-            err = asm_misc.check_psrtransop(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_misc.encode_psrtransop(self.opname, self.condcode, self.operands)
-        elif helpers.is_swiop(fullname):
-            err = asm_misc.check_swiop(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_misc.encode_swiop(self.opname, self.condcode, self.operands)
-        elif helpers.is_mulop(fullname):
-            err = asm_mul.check_mulop(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_mul.encode_mulop(self.opname, self.flags, self.condcode, self.operands)
-        elif helpers.is_longmulop(fullname):
-            err = asm_mul.check_longmulop(self.opname, self.operands)
-            if len(err) > 0:
-                self.errmsg = err
-                return -1
-            self.hexcode = asm_mul.encode_longmulop(self.opname, self.flags, self.condcode, self.operands)        
-        else:
-            self.hexcode = self.length*b'\x00'#TODO: REMOVE THIS. DEBUGGING ONLY
-            ##self.errmsg = 'UNIMPLEMENTED'
-            ##return -1
+        err = self._check_syntax(labeldict)
+        if len(err) > 0:
+            self.errmsg = err
+            return -1
+        self.hexcode = self._encode_line(labeldict)
         if len(self.hexcode) != self.length:
-            self.errmsg = "Precalculated length (%i bytes) and real length (%i bytes) don't match" % (self.length, len(enc))
+            self.errmsg = 'Precalculated length (%i bytes) and real length (%i bytes) are not the same' % (self.length, len(enc))
             return -1
         return 0
 
