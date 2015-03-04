@@ -1,3 +1,13 @@
+def is_coprocreg(s):
+    """returns True iff s specifies a coprocessor register"""
+    coprocreglist = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15']
+    return s.lower() in coprocreglist
+
+def is_coproc(s):
+    """returns True iff s specifies a coprocessor"""
+    coproclist = ['P0', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15']
+    return s.upper() in coproclist
+
 def encode_imval(s):
     """s must be a syntactically valid, encodable immediate value
 returns the imval encoded as in psrtrans/dataproc"""
