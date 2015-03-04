@@ -113,10 +113,10 @@ Encodes the op2. Returns a tuple of I-flag and an integer containing the other 1
                 shiftbyreg = False
                 if shiftby == 0:
                     shifttype = 'LSL'
-                if shifttype in ['LSR', 'ASR'] and shiftby == 32:
+                if shifttype.upper() in ['LSR', 'ASR'] and shiftby == 32:
                     shiftby = 0
     if not iflag:
-        shiftfield = ({'LSL' : 0, 'ASL' : 0, 'LSR' : 1, 'ASR' : 2, 'ROR' : 3}[shifttype] << 1) | shiftbyreg
+        shiftfield = ({'LSL' : 0, 'ASL' : 0, 'LSR' : 1, 'ASR' : 2, 'ROR' : 3}[shifttype.upper()] << 1) | shiftbyreg
         if shiftbyreg:
             shiftfield = (shiftby << 4) | shiftfield
         else:

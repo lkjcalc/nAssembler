@@ -226,6 +226,10 @@ returns error message string, empty string if no error"""
             return asm_mul.check_longmulop(self.opname, self.operands)
         elif helpers.is_coprocregtransop(fullname):
             return asm_cpregtrans.check_coprocregtransop(self.opname, self.operands)
+        elif helpers.is_singledatatransop(fullname):
+            return asm_datatrans.check_singledatatransop(self.flags, self.operands, self.address, labeldict)
+        elif helpers.is_halfsigneddatatransop(fullname):
+            return asm_datatrans.check_halfsigneddatatransop(self.operands, self.address, labeldict)
         else:
             return ''
         #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
@@ -251,6 +255,10 @@ returns encoded line as a bytes object"""
             return asm_mul.encode_longmulop(self.opname, self.flags, self.condcode, self.operands)
         elif helpers.is_coprocregtransop(fullname):
             return asm_cpregtrans.encode_coprocregtransop(self.opname, self.condcode, self.operands)
+        elif helpers.is_singledatatransop(fullname):
+            return asm_datatrans.encode_singledatatransop(self.opname, self.condcode, self.flags, self.operands, self.address, labeldict)
+        elif helpers.is_halfsigneddatatransop(fullname):
+            return asm_datatrans.encode_halfsigneddatatransop(self.opname, self.condcode, self.flags, self.operands, self.address, labeldict)
         else:
             return b'\00'*self.length
         #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED

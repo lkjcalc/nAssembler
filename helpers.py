@@ -91,6 +91,8 @@ def is_valid_imval(s):
         return False
     if s[0] != '#':
         return False
+    if s[1] in ['-', '+'] and len(s) >= 3:
+        s = s[0]+s[2:]
     if s == '#0':
         return True
     if s.startswith('#\'') and s[-1] == '\'' and len(s) == 4 and ord(s[2]) <= 255:
@@ -108,19 +110,25 @@ def is_valid_imval(s):
 def imval_to_int(s):
     """returns value of the immediate value s
 s must be a syntactically valid immediate value, or the result is meaningless"""
-    if s.startswith('#'):
-        if s == '#0':
-            return 0
-        if s.startswith('#\'') and s[-1] == '\'' and len(s) == 4:
-            return ord(s[2])
-        if s.startswith('#0x'):
-            return int(s[3:], 16)
-        if s.startswith('#0'):
-            return int(s[2:], 8)
-        if s.startswith('#0b'):
-            return int(s[3:], 2)
-        return int(s[1:])
-    return 0
+    sign = 1
+    if s[1] == '-':
+        sign = -1
+        s = s[0]+s[2:]
+    elif s[1] == '+':
+        s = s[0]+s[2:]
+    if s == '#0':
+        val = 0
+    elif s.startswith('#\'') and s[-1] == '\'' and len(s) == 4:
+        val = ord(s[2])
+    elif s.startswith('#0x'):
+        val = int(s[3:], 16)
+    elif s.startswith('#0'):
+        val = int(s[2:], 8)
+    elif s.startswith('#0b'):
+        val = int(s[3:], 2)
+    else:
+        val = int(s[1:])
+    return sign*val
 
 def is_valid_label(s):
     """returns True if s is a syntactically valid label, False otherwise
