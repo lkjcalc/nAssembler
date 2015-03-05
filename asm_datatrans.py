@@ -196,3 +196,34 @@ Encodes the instruction and returns it as a bytes object"""
     ccval = helpers.get_condcode_value(condcode)
     encoded = helpers.encode_32bit([(28, 4, ccval), (24, 1, preindexed), (23, 1, upflag), (22, 1, not iflag), (21, 1, writeback), (20, 1, loadflag), (16, 4, rn), (12, 4, rd), (8, 4, offset<<4), (7, 1, 0x1), (6, 1, sflag), (5, 1, hflag), (4, 1, 0x1), (0, 4, offset)])
     return helpers.bigendian_to_littleendian(encoded)
+
+def check_swapop(operands):
+    """Assumes valid name, valid name+flags combination, valid condcode
+Checks the operands and returns an error string if invalid, empty string otherwise"""
+    operands = [x.strip() for x in operands.split(',')]
+    if len(operands) != 3:
+        return 'Expected 3 operands, got %i' % (len(operands))
+    if len(operands[2]) < 4:
+        return 'Invalid syntax'
+    if operands[2][0] != '[' or operands[2][-1] != ']':
+        return 'Missing brackets around third operand of swap instruction'
+    operands[2] = operands[2][1:-1]
+    for op in operands:
+        if not helpers.is_reg(op):
+            return 'Only registers are allowed here'
+    for op in operands:
+        if helpers.get_reg_num(op) == 15:
+            return 'PC is not allowed here'
+    return ''        
+
+def encode_swapop(name, flags, condcode, operands):
+    """check_swapop must be called before this
+Encodes the instruction and returns it as a bytes object"""
+    operands = [x.strip() for x in operands.split(',')]
+    operands[2] = operands[2][1:-1]
+    operands = [helpers.get_reg_num(x) for x in operands]
+    byteflag = (flags == 'B')
+    ccval = helpers.get_condcode_value(condcode)
+    encoded = helpers.encode_32bit([(28, 4, ccval), (23, 5, 0x2), (22, 1, byteflag), (16, 4, operands[2]), (12, 4, operands[0]), (4, 4, 0x9), (0, 4, operands[1])])
+    return helpers.bigendian_to_littleendian(encoded)
+
