@@ -12,17 +12,17 @@ error string otherwise"""
             return 'Expected bracket or label'
         offset = labeldict[addresspart] - address - 8
         addresspart = '[PC, #'+str(offset)+']'#range check done below
-    if addresspart[-2:] in [']!', ']']:
-        preindexed = True
-        if addresspart[-1] == '!':
-            writeback = True
-            addresspart = addresspart[:-2]#strip the trailing ]!
-        else:
-            writeback = False
-            addresspart = addresspart[:-1]#strip the trailing ]
-    else:
-        preindexed = False
+    writeback = False
+    if addresspart[-1] == '!':
         writeback = True
+        addresspart = addresspart[:-1]#strip the trailing !
+    if addresspart[-1] == ']':
+        preindexed = True
+        addresspart = addresspart[:-1]#strip the trailing ]
+    else:
+        if writeback:
+            return '! is only allowed for preindexed addressing'
+        preindexed = False
     addresspart = addresspart[1:]#strip the leading [
     addresspart = [x.strip() for x in addresspart.split(',')]
     if len(addresspart) < 1 or len(addresspart) > 3 or (hsflag and len(addresspart) > 2):
@@ -81,7 +81,7 @@ error string otherwise"""
             return 'Invalid shift name'
         if helpers.is_reg(shift[1]):
             return 'Register specified shift amount is not allowed in data transfer instructions'
-        if not helpers.is_valid_imval(shift[1])
+        if not helpers.is_valid_imval(shift[1]):
             return 'Invalid shift amount'
         n = helpers.imval_to_int(shift[1])
         if n >= 0 and n <= 31:
@@ -94,7 +94,7 @@ error string otherwise"""
 def check_singledatatransop(flags, operands, address, labeldict):
     """Assumes valid name, valid name+flags combination, valid condcode
 Checks the operands and returns an error string if invalid, empty string otherwise"""
-    tflag = t in flags
+    tflag = 'T' in flags
     operands = [x.strip() for x in operands.split(',', maxsplit=1)]
     if len(operands) != 2:
         return 'Expected more operands'
@@ -119,7 +119,7 @@ Checks the operands and returns an error string if invalid, empty string otherwi
     return ''
     
 
-def parse_datatrans(operands, address, labeldict):
+def parse_datatrans(name, operands, address, labeldict):
     """check_singledatatransop or check_halfsigneddatatransop must be called before this
 Does the work common to halfsigned and normal datatrans encoding"""
     if operands.count('[') == 0:
@@ -134,8 +134,9 @@ Does the work common to halfsigned and normal datatrans encoding"""
         operands = operands[:-1]
     loadflag = (name == 'LDR')
     operands = [x.strip() for x in operands.split(',')]
-    if operands[0][-1] == ']':
-        operands[0] = operands[0][:-1]
+    operands[1] = operands[1][1:]
+    if operands[1][-1] == ']':
+        operands[1] = operands[1][:-1]
     rd = helpers.get_reg_num(operands[0])
     rn = helpers.get_reg_num(operands[1])
     offset = 0
@@ -176,7 +177,7 @@ Does the work common to halfsigned and normal datatrans encoding"""
 def encode_singledatatransop(name, flags, condcode, operands, address, labeldict):
     """check_singledatatransop must be called before this
 Encodes the instruction and returns it as a bytes object"""
-    (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(operands, address, labeldict)
+    (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(name, operands, address, labeldict)
     if 'T' in flags:
         writeback = True
     byteflag = ('B' in flags)
@@ -187,7 +188,7 @@ Encodes the instruction and returns it as a bytes object"""
 def encode_halfsigneddatatransop(name, flags, condcode, operands, address, labeldict):
     """check_halfsigneddatatransop must be called before this
 Encodes the instruction and returns it as a bytes object"""
-    (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(operands, address, labeldict)
+    (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(name, operands, address, labeldict)
     assert not (offset & 0xF00)#either iflag and only lowest 4 bit used or not iflag and only lowest 8 bit used
     assert (not iflag) or not (offset & 0xFF0)
     hflag = ('H' in flags)

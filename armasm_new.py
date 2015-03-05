@@ -8,6 +8,7 @@ import asm_directive
 import asm_misc
 import asm_mul
 import asm_cpregtrans
+import asm_datatrans
 
 class Sourceline:
     #line #the full string
@@ -256,9 +257,9 @@ returns encoded line as a bytes object"""
         elif helpers.is_coprocregtransop(fullname):
             return asm_cpregtrans.encode_coprocregtransop(self.opname, self.condcode, self.operands)
         elif helpers.is_singledatatransop(fullname):
-            return asm_datatrans.encode_singledatatransop(self.opname, self.condcode, self.flags, self.operands, self.address, labeldict)
+            return asm_datatrans.encode_singledatatransop(self.opname, self.flags, self.condcode, self.operands, self.address, labeldict)
         elif helpers.is_halfsigneddatatransop(fullname):
-            return asm_datatrans.encode_halfsigneddatatransop(self.opname, self.condcode, self.flags, self.operands, self.address, labeldict)
+            return asm_datatrans.encode_halfsigneddatatransop(self.opname, self.flags, self.condcode, self.operands, self.address, labeldict)
         else:
             return b'\00'*self.length
         #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
