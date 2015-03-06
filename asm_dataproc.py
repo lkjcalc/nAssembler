@@ -18,6 +18,8 @@ Returns an error string if invalid, empty string otherwise"""
     #->must be of form "reg, shift"
     if not helpers.is_reg(operands[0]):
         return 'Invalid op2 (must be of the form "reg" or "reg, shift" or "immediate value")'
+    if '#' in operands[1]:
+        operands[1] = operands[1][:operands[1].find('#')]+' '+operands[1][operands[1].find('#'):]#make it legal to omit the space between shiftname and immediate value
     shift = [x.strip() for x in operands[1].split()]
     if len(shift) == 1:#"RRX" or "shiftname reg" or "shiftname immediate"
         if shift[0] != 'RRX':
@@ -72,7 +74,7 @@ Encodes the instruction and returns it as a bytes object"""
         (iflag, op2) = encode_op2(','.join(operands[1:]))
         sflag = True
     else:#movop
-        dest = get_reg_num(operands[0])
+        dest = helpers.get_reg_num(operands[0])
         op1 = 0
         (iflag, op2) = encode_op2(','.join(operands[1:]))
     ccval = helpers.get_condcode_value(condcode)
@@ -98,6 +100,8 @@ Encodes the op2. Returns a tuple of I-flag and an integer containing the other 1
     else:
         iflag = False
         reg = helpers.get_reg_num(operands[0])
+        if '#' in operands[1]:
+            operands[1] = operands[1][:operands[1].find('#')]+' '+operands[1][operands[1].find('#'):]#make it legal to omit the space between shiftname and immediate value
         shift = [x.strip() for x in operands[1].split()]
         if len(shift) == 1:#RRX
             shifttype = 'ROR'

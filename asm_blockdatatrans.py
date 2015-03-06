@@ -34,7 +34,7 @@ checks the operands and returns an error string if invalid, empty string otherwi
     reglist = []
     for op in operands[1]:
         if '-' in op:
-            r = op.split('-')
+            r = [x.strip() for x in op.split('-')]
             if len(r) > 2:
                 return 'Invalid syntax'
             if not helpers.is_reg(r[0]) or not helpers.is_reg(r[1]):
@@ -77,10 +77,9 @@ encodes the instruction and returns it as a bytes object"""
     reglist = []
     for op in operands[1:]:
         if '-' in op:
-            (start, end) = [helpers.get_reg_num(r) for r in op.split('-')]
+            (start, end) = [helpers.get_reg_num(r.strip()) for r in op.split('-')]
             reglist += range(start, end+1)
         else:
-            print(op, helpers.get_reg_num(op))
             reglist.append(helpers.get_reg_num(op))
     regfield = 0
     for r in reglist:

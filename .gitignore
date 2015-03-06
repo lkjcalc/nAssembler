@@ -1,3 +1,4 @@
 __pycache__/
 *.asm
 *.bin
+armasm_autotests2.py

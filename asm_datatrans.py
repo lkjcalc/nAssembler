@@ -140,7 +140,7 @@ Does the work common to halfsigned and normal datatrans encoding"""
     rd = helpers.get_reg_num(operands[0])
     rn = helpers.get_reg_num(operands[1])
     offset = 0
-    upflag = False
+    upflag = True
     iflag = False
     if len(operands) > 2:
         if helpers.is_valid_imval(operands[2]):
@@ -194,7 +194,7 @@ Encodes the instruction and returns it as a bytes object"""
     hflag = ('H' in flags)
     sflag = ('S' in flags)
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 1, preindexed), (23, 1, upflag), (22, 1, not iflag), (21, 1, writeback), (20, 1, loadflag), (16, 4, rn), (12, 4, rd), (8, 4, offset<<4), (7, 1, 0x1), (6, 1, sflag), (5, 1, hflag), (4, 1, 0x1), (0, 4, offset)])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 1, preindexed), (23, 1, upflag), (22, 1, not iflag), (21, 1, writeback), (20, 1, loadflag), (16, 4, rn), (12, 4, rd), (8, 4, offset>>4), (7, 1, 0x1), (6, 1, sflag), (5, 1, hflag), (4, 1, 0x1), (0, 4, offset)])
     return helpers.bigendian_to_littleendian(encoded)
 
 def check_swapop(operands):

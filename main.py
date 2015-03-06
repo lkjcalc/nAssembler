@@ -121,12 +121,12 @@ returns -1 on failure, 0 on success"""
     f.write(binary)
     f.close()
 
-    #debug cmdline output:
-    for i, c in enumerate(code):
-        print(''.join(['%.2x' % (b) for b in c.get_hex()]), c.line)
-    
-    for i, c in enumerate(code):
-        print(''.join(['%.2x' % (b) for b in c.get_hex()]), end = ' ')
+##    #debug cmdline output:
+##    for i, c in enumerate(code):
+##        print(''.join(['%.2x' % (b) for b in c.get_hex()]), c.line)
+##    
+##    for i, c in enumerate(code):
+##        print(''.join(['%.2x' % (b) for b in c.get_hex()]), end = ' ')
 
 def cmd_assemble():
     """gets the arguments from the command line parameters"""
