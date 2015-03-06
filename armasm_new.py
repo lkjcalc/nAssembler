@@ -235,7 +235,7 @@ returns error message string, empty string if no error"""
         elif helpers.is_swapop(fullname):
             return asm_datatrans.check_swapop(self.operands)
         elif helpers.is_blockdatatransop(fullname):
-            return asm_blockdatatrans.check_blockdatatransop(self.name, self.operands)
+            return asm_blockdatatrans.check_blockdatatransop(self.opname, self.operands)
         else:
             return 'Unknown or not implemented instruction (failed in _check_syntax)'
 
@@ -274,6 +274,8 @@ returns encoded line as a bytes object"""
         """self must be processed by replace_pseudoinstructions
 sets self.hexcode to the binary machine code corresponding to self
 returns 0 on success, -1 on failure"""
+        if len(self.opname) == 0:
+            return 0
         err = self._check_syntax(labeldict)
         if len(err) > 0:
             self.errmsg = err
