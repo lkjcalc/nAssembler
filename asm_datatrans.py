@@ -15,22 +15,22 @@ error string otherwise"""
     writeback = False
     if addresspart[-1] == '!':
         writeback = True
-        addresspart = addresspart[:-1]#strip the trailing !
+        addresspart = addresspart[:-1].strip()#strip the trailing !
     if addresspart[-1] == ']':
         preindexed = True
-        addresspart = addresspart[:-1]#strip the trailing ]
+        addresspart = addresspart[:-1].strip()#strip the trailing ]
     else:
         if writeback:
             return '! is only allowed for preindexed addressing'
         preindexed = False
-    addresspart = addresspart[1:]#strip the leading [
+    addresspart = addresspart[1:].strip()#strip the leading [
     addresspart = [x.strip() for x in addresspart.split(',')]
     if len(addresspart) < 1 or len(addresspart) > 3 or (hsflag and len(addresspart) > 2):
         return 'Invalid addresspart'
     if not preindexed:
         if addresspart[0][-1:] != ']':
             return 'Expected closing ]'
-        addresspart[0] = addresspart[0][:-1]#strip the trailing ]
+        addresspart[0] = addresspart[0][:-1].strip()#strip the trailing ]
     #there should be no syntax differences between pre- and post-indexing left
     if not helpers.is_reg(addresspart[0]):
         return 'Expected register as base'
@@ -128,15 +128,15 @@ Does the work common to halfsigned and normal datatrans encoding"""
         operands = operands.split(',')[0] + ',[PC, #'+str(offset)+']'
     writeback = (operands[-1] == '!')
     if writeback:
-        operands = operands[:-1]
+        operands = operands[:-1].strip()
     preindexed = (operands[-1] == ']')
     if preindexed:
-        operands = operands[:-1]
+        operands = operands[:-1].strip()
     loadflag = (name == 'LDR')
     operands = [x.strip() for x in operands.split(',')]
-    operands[1] = operands[1][1:]
+    operands[1] = operands[1][1:].strip()
     if operands[1][-1] == ']':
-        operands[1] = operands[1][:-1]
+        operands[1] = operands[1][:-1].strip()
     rd = helpers.get_reg_num(operands[0])
     rn = helpers.get_reg_num(operands[1])
     offset = 0
@@ -207,7 +207,7 @@ Checks the operands and returns an error string if invalid, empty string otherwi
         return 'Invalid syntax'
     if operands[2][0] != '[' or operands[2][-1] != ']':
         return 'Missing brackets around third operand of swap instruction'
-    operands[2] = operands[2][1:-1]
+    operands[2] = operands[2][1:-1].strip()
     for op in operands:
         if not helpers.is_reg(op):
             return 'Only registers are allowed here'
@@ -220,7 +220,7 @@ def encode_swapop(name, flags, condcode, operands):
     """check_swapop must be called before this
 Encodes the instruction and returns it as a bytes object"""
     operands = [x.strip() for x in operands.split(',')]
-    operands[2] = operands[2][1:-1]
+    operands[2] = operands[2][1:-1].strip()
     operands = [helpers.get_reg_num(x) for x in operands]
     byteflag = (flags == 'B')
     ccval = helpers.get_condcode_value(condcode)

@@ -9,6 +9,7 @@ import asm_misc
 import asm_mul
 import asm_cpregtrans
 import asm_datatrans
+import asm_blockdatatrans
 
 class Sourceline:
     #line #the full string
@@ -233,10 +234,10 @@ returns error message string, empty string if no error"""
             return asm_datatrans.check_halfsigneddatatransop(self.operands, self.address, labeldict)
         elif helpers.is_swapop(fullname):
             return asm_datatrans.check_swapop(self.operands)
+        elif helpers.is_blockdatatransop(fullname):
+            return asm_blockdatatrans.check_blockdatatransop(self.name, self.operands)
         else:
-            return ''
-        #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
-        #    return 'Unknown or not implemented instruction (failed in _check_syntax)'
+            return 'Unknown or not implemented instruction (failed in _check_syntax)'
 
     def _encode_line(self, labeldict):
         """self must be processed by _check_syntax
@@ -264,10 +265,10 @@ returns encoded line as a bytes object"""
             return asm_datatrans.encode_halfsigneddatatransop(self.opname, self.flags, self.condcode, self.operands, self.address, labeldict)
         elif helpers.is_swapop(fullname):
             return asm_datatrans.encode_swapop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_blockdatatransop(fullname):
+            return asm_blockdatatrans.encode_blockdatatransop(self.opname, self.flags, self.condcode, self.operands)
         else:
-            return b'\00'*self.length
-        #TODO:REMOVE THIS. HERE TO DEBUG EVEN THOUGH NOT FULLY IMPLEMENTED
-        #    return b''
+            return b''
         
     def assemble(self, labeldict):
         """self must be processed by replace_pseudoinstructions
