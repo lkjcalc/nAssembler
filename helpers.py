@@ -1,3 +1,10 @@
+def reverse(b):#needed because no [::-1] available in upy
+    """returns the reversed bytes b"""
+    tmp = []
+    for c in b:
+        tmp.insert(0, c)
+    return bytes(tmp)
+    
 def is_coprocreg(s):
     """returns True iff s specifies a coprocessor register"""
     coprocreglist = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15']
@@ -59,7 +66,7 @@ len(b)%4 must be 0"""
     if len(b) % 4:
         return b''
     for i in range(0, len(b), 4):
-        outstr += b[i:i+4][::-1]
+        outstr += reverse(b[i:i+4])
     return outstr
 
 def rotateleft32(n, r):
@@ -70,6 +77,15 @@ def rotateleft32(n, r):
     n &= 0xFFFFFFFF
     n += carry
     return n
+
+def isalnum(s):#needed because upy doesn't have it
+    """returns True iff s contains at least one char and only alphanumeric chars (0...9A...Za...z)"""
+    if len(s) == 0:
+        return False
+    for c in s:
+        if not c in '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz':
+            return False
+    return True
 
 def isxdigit(s):
     """returns True iff s contains at least one char and only xdigits (0...9A...Fa...f)"""
@@ -136,7 +152,7 @@ Rules: must start with an alphabetic character, must only contain alphanumeric c
     if not s[0].isalpha():
         return False
     for c in s:
-        if c.isalnum() or c == '_':
+        if isalnum(c) or c == '_':
             continue
         return False
     return True

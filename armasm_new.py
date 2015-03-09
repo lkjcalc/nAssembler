@@ -147,7 +147,7 @@ returns 0 on success, -1 on failure/error"""
         if self.notcomment[:1].isspace():
             self.operation = self.notcomment.strip()
             return 0
-        splitr = self.notcomment.split(maxsplit=1)
+        splitr = self.notcomment.split(None, 1)
         if len(splitr) == 0:
             return 0
         elif len(splitr) == 1:
@@ -163,7 +163,7 @@ returns 0 on success, -1 on failure/error"""
         """self must be processed by parse_labelpart but nothing after
 parses self.operation: the operation name with suffixes and stuff, sets self.opname, self.flags, self.condcode (defaults to AL if conditionable) to the computed values. stores the rest in self.operands
 returns 0 on success, -1 on failure/error"""
-        splitr = self.operation.split(maxsplit=1)
+        splitr = self.operation.split(None, 1)
         if len(splitr) == 0:
             return 0
         elif len(splitr) == 1:

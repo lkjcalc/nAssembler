@@ -16,7 +16,7 @@ def gettext(filename):
     f = open(filename, 'r')
     text = f.read()
     f.close()
-    return text.splitlines()
+    return text.split('\n')
 
 def assembler(infile, outfile):
     """assembles infile and writes the binary to outfile

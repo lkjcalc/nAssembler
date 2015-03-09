@@ -3,7 +3,7 @@ import helpers
 def check_blockdatatransop(name, operands):
     """Assumes valid name, valid name+flags combination, valid condcode
 checks the operands and returns an error string if invalid, empty string otherwise"""
-    operands = [x.strip() for x in operands.split(',', maxsplit=1)]
+    operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) < 2:
         return 'Too few operands'
     if len(operands[0]) < 2:
@@ -43,7 +43,7 @@ checks the operands and returns an error string if invalid, empty string otherwi
             end = helpers.get_reg_num(r[1])
             if start >= end:
                 return 'Registers must be specified in ascending order'
-            reglist += range(start, end+1)
+            reglist += list(range(start, end+1))#upy needs explicit conversion
         else:
             if not helpers.is_reg(op):
                 return 'Expected register'
@@ -78,7 +78,7 @@ encodes the instruction and returns it as a bytes object"""
     for op in operands[1:]:
         if '-' in op:
             (start, end) = [helpers.get_reg_num(r.strip()) for r in op.split('-')]
-            reglist += range(start, end+1)
+            reglist += list(range(start, end+1))#upy needs explicit conversion
         else:
             reglist.append(helpers.get_reg_num(op))
     regfield = 0

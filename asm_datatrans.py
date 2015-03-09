@@ -95,7 +95,7 @@ def check_singledatatransop(flags, operands, address, labeldict):
     """Assumes valid name, valid name+flags combination, valid condcode
 Checks the operands and returns an error string if invalid, empty string otherwise"""
     tflag = 'T' in flags
-    operands = [x.strip() for x in operands.split(',', maxsplit=1)]
+    operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) != 2:
         return 'Expected more operands'
     if not helpers.is_reg(operands[0]):
@@ -108,7 +108,7 @@ Checks the operands and returns an error string if invalid, empty string otherwi
 def check_halfsigneddatatransop(operands, address, labeldict):
     """Assumes valid name, valid name+flags combination, valid condcode
 Checks the operands and returns an error string if invalid, empty string otherwise"""
-    operands = [x.strip() for x in operands.split(',', maxsplit=1)]
+    operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) != 2:
         return 'Expected more operands'
     if not helpers.is_reg(operands[0]):
