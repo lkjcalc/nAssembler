@@ -60,3 +60,4 @@ encodes the instruction and returns it as a bytes object"""
     ccval = helpers.get_condcode_value(condcode)
     encoded = helpers.encode_32bit([(28, 4, ccval), (23, 5, 0x1), (22, 1, signedflag), (21, 1, aflag), (20, 1, sflag), (16, 4, rdhi), (12, 4, rdlo), (8, 4, rs), (4, 4, 0x9), (0, 4, rm)])
     return helpers.bigendian_to_littleendian(encoded)
+
