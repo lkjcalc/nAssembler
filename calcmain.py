@@ -111,11 +111,14 @@ returns -1 on failure, 0 on success"""
         return -1
 
     #stage 6: write output to file
-    binary = b''
+    #binary = b''
+    binary = bytearray()
     for c in code:
-        binary += c.get_hex()
+        for b in c:
+            binary.append(b)
+        #binary += c.get_hex()
     f = open(outfile, 'wb')
-    f.write(b'PRG\x00')
+    f.write(bytearray([ord(c) for c in 'PRG\x00']))##
     f.write(binary)
     f.close()
 

@@ -3,8 +3,9 @@ def reverse(b):#needed because no [::-1] available in upy
     tmp = []
     for c in b:
         tmp.insert(0, c)
-    return bytes(tmp)
-    
+    #return bytes(tmp)
+    return bytearray(tmp)
+
 def is_coprocreg(s):
     """returns True iff s specifies a coprocessor register"""
     coprocreglist = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15']
@@ -48,7 +49,8 @@ returns the encoded instruction as a bytes object"""
     word = 0
     for e in l:
         word = word | ((e[2] & ((1 << e[1])-1)) << e[0])
-    return bytes([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])
+    #return bytes([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])
+    return bytearray([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])#revert when upy fix is available
 
 def is_valid_numeric_literal(s):
     """returns True iff '#'+s is a valid immediate value"""
@@ -62,11 +64,14 @@ s must be a syntactically valid numeric literal, or the result is meaningless"""
 def bigendian_to_littleendian(b):
     """converts bytes object b from big endian to little endian
 len(b)%4 must be 0"""
-    outstr = b''
+    outstr = bytearray()
     if len(b) % 4:
-        return b''
+        return bytearray()
     for i in range(0, len(b), 4):
-        outstr += reverse(b[i:i+4])
+        r = reverse(b[i:i+4])
+        for c in r:
+            outstr.append(c)
+        #outstr += reverse(b[i:i+4])#not possible with bytearray in upy
     return outstr
 
 def rotateleft32(n, r):
