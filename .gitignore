@@ -1,5 +1,4 @@
 __pycache__/
-*.asm
 *.bin
 /tools/*
 !/tools/includer2.py
