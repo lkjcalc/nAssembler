@@ -75,6 +75,9 @@ error string otherwise"""
         if shift.upper() == 'RRX':
             return ''
         shift = shift.split()
+        if len(shift) == 1 and '#' in shift[0]:
+            shift = shift[0].split('#')
+            shift[1] = '#' + shift[1]
         if len(shift) != 2:
             return 'Invalid shift expression'
         if not helpers.is_shiftname(shift[0]):
