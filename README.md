@@ -18,10 +18,13 @@ You should now see the output file after refreshing the docbrowser
 Assembly language
 -----------------
 (Also look at the examples)
-Instruction names must be preceded by whitespace
-Labels must not be preceded by any whitespace
-The instruction names and syntax are like in standard ARM assembly
+IMPORTANT (syntax is not very flexible at the moment):
+-Instruction names must be preceded by whitespace
+-Labels must not be preceded by any whitespace
+-The instruction names and syntax are like in standard ARM assembly
 (like in the official ARM online documentation)
+-No automatic substitution of e.g. MVN for MOV if the immediate value can only be encoded in the inverted case
+-Two operands were three are required is not allowed (no implicit destination register), e.g. "ADD r0,#28" must be written out as "ADD r0,r0,#28"
 
 All usual instructions are supported:
 ADC(S), ADD(S), AND(S), B, BIC(S), BL, BX, CMP, CMN,
