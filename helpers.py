@@ -101,6 +101,24 @@ def isxdigit(s):
             return False
     return True
 
+def isoctdigit(s):
+    """returns True iff s contains at least one char and only digits 0...7"""
+    if len(s) == 0:
+        return False
+    for c in s:
+        if not c in '01234567':
+            return False
+    return True
+
+def isbindigit(s):
+    """returns True iff s contains at least one char and only digits 0 and 1"""
+    if len(s) == 0:
+        return False
+    for c in s:
+        if not c in '01':
+            return False
+    return True
+
 def is_shiftname(s):
     """returns True iff s is a shiftname (excluding RRX)"""
     shiftnamelist = ['ASL', 'LSL', 'LSR', 'ASR', 'ROR']
@@ -143,10 +161,10 @@ s must be a syntactically valid immediate value, or the result is meaningless"""
         val = ord(s[2])
     elif s.startswith('#0x'):
         val = int(s[3:], 16)
-    elif s.startswith('#0'):
-        val = int(s[2:], 8)
     elif s.startswith('#0b'):
         val = int(s[3:], 2)
+    elif s.startswith('#0'):
+        val = int(s[2:], 8)
     else:
         val = int(s[1:])
     return sign*val
