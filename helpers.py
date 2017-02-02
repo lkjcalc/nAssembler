@@ -52,6 +52,17 @@ returns the encoded instruction as a bytes object"""
     #return bytes([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])
     return bytearray([(word >> 24) & 0xFF, (word >> 16) & 0xFF, (word >> 8) & 0xFF, word & 0xFF])#revert when upy fix is available
 
+def encode_16bit(l):
+    """encodes a 16bit value using l to determine contents and positions
+l must be a list of tuples of 3 integers: (offset, length, value). LSB has offset 0
+attention: does not change endianness
+returns the encoded instruction as a bytes object"""
+    word = 0
+    for e in l:
+        word = word | ((e[2] & ((1 << e[1])-1)) << e[0])
+    #return bytes([(word >> 8) & 0xFF, word & 0xFF])
+    return bytearray([(word >> 8) & 0xFF, word & 0xFF])#revert when upy fix is available
+
 def is_valid_numeric_literal(s):
     """returns True iff '#'+s is a valid immediate value"""
     return is_valid_imval('#'+s)
@@ -72,6 +83,19 @@ len(b)%4 must be 0"""
         for c in r:
             outstr.append(c)
         #outstr += reverse(b[i:i+4])#not possible with bytearray in upy
+    return outstr
+
+def bigendian_to_littleendian_16bit(b):
+    """converts bytes object b from big endian to little endian,
+assuming it is an array of 16bit values
+len(b)%2 must be 0"""
+    outstr = bytearray()
+    if len(b) % 2:
+        return bytearray()
+    for i in range(0, len(b), 2):
+        r = reverse(b[i:i+2])
+        for c in r:
+            outstr.append(c)
     return outstr
 
 def rotateleft32(n, r):
@@ -221,7 +245,7 @@ def is_condcode(s):
     return get_condcode_value(s) != -1
 
 def is_directive(s):
-    directivelist = ['DCD', 'DCDU', 'ALIGN', 'DCB']
+    directivelist = ['DCD', 'DCDU', 'DCW', 'DCWU', 'ALIGN', 'DCB']
     return s.upper() in directivelist
 
 def is_dataproc_fullop(s):

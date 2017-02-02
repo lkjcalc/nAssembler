@@ -25,6 +25,12 @@ returns -1 on failure (invalid name)"""
             padding = ((4 - (address % 4)) % 4)
         operands = operands.split(',')
         return padding + 4*len(operands)
+    elif name == 'DCW' or name == 'DCWU':
+        padding = 0
+        if name == 'DCW':
+            padding = address % 2
+        operands = operands.split(',')
+        return padding + 2*len(operands)
     elif name == 'ALIGN':
         operands = operands.split(',')
         alignment = 4

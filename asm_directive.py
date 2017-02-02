@@ -16,6 +16,19 @@ Returns an error string if invalid, empty string otherwise"""
             if i < -(2**31):
                 return 'Numeric literal outside of 32bit range: lower than -2^31'
         return ''
+    if name == 'DCW' or name == 'DCWU':
+        operands = [x.strip() for x in operands.split(',')]
+        if len(operands) == 0:
+            return 'Missing operands after DCW: expected at least one immediate value'
+        for op in operands:
+            if not helpers.is_valid_numeric_literal(op):
+                return 'Invalid numeric literal'
+            i = helpers.numeric_literal_to_int(op)
+            if i > (2**16)-1:
+                return 'Numeric literal outside of 16bit range: greater than 2^16-1'
+            if i < -(2**15):
+                return 'Numeric literal outside of 32bit range: lower than -2^15'
+        return ''
     if name == 'ALIGN':
         operands = [x.strip() for x in operands.split(',')]
         if len(operands) == 0 or len(operands[0]) == 0:#implicit alignment to 4 bytes
@@ -72,6 +85,15 @@ Encodes the directive and returns it as a bytes object"""
         for op in operands:
             i = helpers.numeric_literal_to_int(op)
             encoded += helpers.bigendian_to_littleendian(helpers.encode_32bit([(0, 32, i)]))
+        return encoded
+    if name == 'DCW' or name == 'DCWU':
+        operands = [x.strip() for x in operands.split(',')]
+        encoded = b''
+        if name == 'DCW':
+            encoded += b'\x00'*(address % 2)#align
+        for op in operands:
+            i = helpers.numeric_literal_to_int(op)
+            encoded += helpers.bigendian_to_littleendian_16bit(helpers.encode_16bit([(0, 16, i)]))
         return encoded
     if name == 'ALIGN':
         operands = [x.strip() for x in operands.split(',')]
