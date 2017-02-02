@@ -33,7 +33,7 @@ MRC, MRS, MSR, MUL(S), MVN(S), ORR(S),
 RSB(S), RSC(S), SBC(S), SMLAL(S), SMULL(S), STM..,
 STR(B/T/BT/H), SUB(S), SVC/SWI, SWP(B), TEQ, TST, UMLAL(S), UMULL(S)
 
-The DCD, DCDU, DCB and ALIGN directives are supported
+The DCD, DCDU, DCW, DCWU, DCB and ALIGN directives are supported
 
 Pseudo instruction (like PUSH, ADR etc) are not implemented at the moment.
 Other instructions may be missing (report if you need one).
