@@ -53,7 +53,7 @@ def _aropexpr_to_int(s):
 returns the integer that the expression evaluates to"""
     s = s.strip()
     sign = 1
-    if s[1] == '-':
+    if s[0] == '-':
         sign = -1
     s = s[1:]
     i = len(s)
