@@ -18,9 +18,10 @@ checks the operands and returns an error string if invalid, empty string otherwi
         return ''
     else:
         operands = operands.strip()
-        if not operands in labeldict:
-            return 'Invalid Operand: Expected label'
-        offset = labeldict[operands] - address - 8
+        err = helpers.check_pcrelative_expression(operands, labeldict)
+        if len(err) != 0:
+            return 'Invalid Operand: Expected pc relative expression (%s)' % (err)
+        offset = helpers.pcrelative_expression_to_int(operands, address, labeldict)
         if offset % 4 != 0:
             return 'Offset must be aligned to four bytes'
         offset >>= 2
@@ -38,7 +39,7 @@ encodes the instruction and returns it as a bytes object"""
         encoded = helpers.encode_32bit([(28, 4, ccval), (4, 24, 0x12FFF1), (0, 4, rn)])
         return helpers.bigendian_to_littleendian(encoded)
     else:
-        offset = labeldict[operands] - address - 8
+        offset = helpers.pcrelative_expression_to_int(operands, address, labeldict)
         offset >>= 2
         offset = offset + (offset < 0)*(1 << 24)#correction for negative offsets
         ccval = helpers.get_condcode_value(condcode)

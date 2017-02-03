@@ -6,6 +6,86 @@ def reverse(b):#needed because no [::-1] available in upy
     #return bytes(tmp)
     return bytearray(tmp)
 
+def _check_aropexpr(s):
+    """returns '' if s specifies an aropexpr, otherwise nonempty error string,
+where an aropexpr is an expression of the form arop expr,
+where arop is + or - and expr is num or num aropexpr, where is_valid_imval('#'+num) returns True
+"""
+    s = s.strip()
+    if len(s) == 0:
+        return 'invalid epxression: expected nonempty string'
+    if s[0] not in ('+','-'):
+        return 'invalid expression: expected "+" or "-"'
+    s = s[1:]
+    i = len(s)
+    if '+' in s:
+        i = s.find('+')
+    if '-' in s:
+        i = min(i,s.find('-'))
+    num = s[:i].strip()
+    rest = s[i:].strip()
+    if not is_valid_imval('#'+num):
+        return 'invalid expression: expected numeric immediate value'
+    if len(rest) == 0:
+        return ''
+    return _check_aropexpr(rest)
+
+def check_pcrelative_expression(s, labeldict):
+    """returns '' if s specifies a pc relative expression, otherwise nonempty error string"""
+    for i in range(len(s)):
+        if (not isalnum(s[i])) and s[i] != '_':
+            label = s[:i]
+            rest = s[i:]
+            break
+    else:
+        label = s
+        rest = ''
+    label.strip()
+    rest.strip()
+    if label not in labeldict:
+        return 'invalid pc relative expression: undefined label'
+    if len(rest) == 0:
+        return ''
+    return _check_aropexpr(rest)
+
+def _aropexpr_to_int(s):
+    """s must be a valid aropexpr
+returns the integer that the expression evaluates to"""
+    s = s.strip()
+    sign = 1
+    if s[1] == '-':
+        sign = -1
+    s = s[1:]
+    i = len(s)
+    if '+' in s:
+        i = s.find('+')
+    if '-' in s:
+        i = min(i,s.find('-'))
+    num = s[:i].strip()
+    rest = s[i:].strip()
+    numint = imval_to_int('#'+num)
+    if len(rest) == 0:
+        return sign*numint
+    return sign*numint + _aropexpr_to_int(rest)
+
+def pcrelative_expression_to_int(s, address, labeldict):
+    """s must be a valid pc relative expression
+returns the offset that the expression evaluates to (with correction for PC==address+8)"""
+    for i in range(len(s)):
+        if (not isalnum(s[i])) and s[i] != '_':
+            label = s[:i]
+            rest = s[i:]
+            break
+    else:
+        label = s
+        rest = ''
+    label.strip()
+    rest.strip()
+    offset = labeldict[label] - (address + 8)
+    if len(rest) == 0:
+        return offset
+    return offset + _aropexpr_to_int(rest)
+
 def is_coprocreg(s):
     """returns True iff s specifies a coprocessor register"""
     coprocreglist = ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15']
