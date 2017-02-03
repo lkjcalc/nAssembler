@@ -6,6 +6,22 @@ def reverse(b):#needed because no [::-1] available in upy
     #return bytes(tmp)
     return bytearray(tmp)
 
+def int_to_signrotimv(n):
+    """returns a tuple (sign, rot, imv) such that sign*ROR(imv,2*rot) == n,
+and such that sign = +-1, 0<=rot<=15, 0<=imv<=255, or None if that is impossible"""
+    for i in range(0, 32, 2):
+        if rotateleft32(n, i) < 256:#-> ans ror i = n with ans 8bit and i 4bit
+            sign = 1
+            rot = i//2
+            imv = rotateleft32(n, i)
+            return (sign, rot, imv)
+        if rotateleft32(-n, i) < 256:
+            sign = -1
+            rot = i//2
+            imv = rotateleft32(-n, i)
+            return (sign, rot, imv)
+    return None
+
 def _check_aropexpr(s):
     """returns '' if s specifies an aropexpr, otherwise nonempty error string,
 where an aropexpr is an expression of the form arop expr,
@@ -391,10 +407,18 @@ def is_coprocregtransop(s):
     coprocregtransoplist = ['MRC', 'MCR']
     return s.upper() in coprocregtransoplist
 
+def is_pseudoinstructionop(s):
+    pseudoinstructionoplist = ['ADR']
+    return s.upper() in pseudoinstructionoplist
+
 def is_opname(s):
     """returns True iff s is a valid operation or directive name (full name, i.e. with flags!), False otherwise"""
-    return is_directive(s) or is_dataprocop(s) or is_branchop(s) or is_psrtransop(s) or is_mulop(s) or is_longmulop(s) or is_swiop(s) or is_singledatatransop(s) or is_halfsigneddatatransop(s) or is_swapop(s) or is_blockdatatransop(s) or is_coprocregtransop(s)
+    return is_directive(s) or is_dataprocop(s) or is_branchop(s) or is_psrtransop(s) or is_mulop(s) or is_longmulop(s) or is_swiop(s) or is_singledatatransop(s) or is_halfsigneddatatransop(s) or is_swapop(s) or is_blockdatatransop(s) or is_coprocregtransop(s) or is_pseudoinstructionop(s)
 
 def is_conditionable(s):
     """check if s can be conditionally executed. returns True if yes, False if no"""
     return True
+
+def is_pseudoinstruction(opname, operands):
+    """check if opname operands is a pseudoinstruction. return True if yes, False if no"""
+    return is_pseudoinstructionop(opname)

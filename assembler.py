@@ -86,9 +86,9 @@ returns -1 on failure, 0 on success"""
 
     #stage 4: evaluate/replace pseudo-instructions and some directives (not implemented yet, todo)
     for i, c in enumerate(code):
-        if c.replace_pseudoinstructions() == -1:
+        if c.replace_pseudoinstructions(labeldict) == -1:
             if len(c.errmsg) > 0:
-                printerror(infile, i, c.errmsg)
+                printerror(infile, i, c.line, c.errmsg)
             else:
                 printerror(infile, i, c.line, 'unknown error in replace_pseudoinstructions')
             numerrs += 1
@@ -103,7 +103,7 @@ returns -1 on failure, 0 on success"""
             if len(c.errmsg) > 0:
                 printerror(infile, i, c.line, c.errmsg)
             else:
-                printerror(infile, i, c.line, 'unknown error in replace_pseudoinstructions')
+                printerror(infile, i, c.line, 'unknown error in assemble')
             numerrs += 1
             continue
     if numerrs != 0:

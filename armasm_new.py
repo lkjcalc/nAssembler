@@ -10,6 +10,7 @@ import asm_mul
 import asm_cpregtrans
 import asm_datatrans
 import asm_blockdatatrans
+import asm_pseudoinstructions
 
 class Sourceline:
     #line #the full string
@@ -202,10 +203,16 @@ returns 0 on success, -1 on failure"""
 returns self.length"""
         return self.length
 
-    def replace_pseudoinstructions(self):
-        """NOT IMPLEMENTED, TODO
-self must be processed by set_length_and_address
+    def replace_pseudoinstructions(self, labeldict):
+        """self must be processed by set_length_and_address
+replaces self.opname, self.operands of pseudoinstructions
 returns 0 on success, -1 on failure"""
+        if helpers.is_pseudoinstruction(self.opname, self.operands):
+            err = asm_pseudoinstruction.check_pseudoinstruction(self.opname, self.operands, self.address, labeldict)
+            if len(err) != 0:
+                self.errmsg = err
+                return -1
+            self.opname, self.operands =  asm_pseudoinstruction.get_replacement(self.opname, self.operands, self.address, labeldict)
         return 0
 
     def _check_syntax(self, labeldict):
