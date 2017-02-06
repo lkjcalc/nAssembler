@@ -1,8 +1,12 @@
 import helpers
 
+
 def check_directive(name, operands):
-    """Assumes valid name. Checks the operands
-Returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name.
+    Check the operands.
+    Return an error string if invalid, empty string otherwise.
+    """
     if name == 'DCD' or name == 'DCDU':
         operands = [x.strip() for x in operands.split(',')]
         if len(operands) == 0:
@@ -31,7 +35,7 @@ Returns an error string if invalid, empty string otherwise"""
         return ''
     if name == 'ALIGN':
         operands = [x.strip() for x in operands.split(',')]
-        if len(operands) == 0 or len(operands[0]) == 0:#implicit alignment to 4 bytes
+        if len(operands) == 0 or len(operands[0]) == 0:  # implicit alignment to 4 bytes
             return ''
         if len(operands) > 2:
             return 'Only two arguments are allowed: alignment, offset'
@@ -73,15 +77,18 @@ Returns an error string if invalid, empty string otherwise"""
         return ''
     return 'Invalid name (failed in check_directive) (report as bug)'
 
+
 def encode_directive(name, operands, address):
-    """check_directive must be called before this
-Address must be the address of the directive
-Encodes the directive and returns it as a bytes object"""
+    """
+    check_directive must be called before this.
+    Address must be the address of the directive.
+    Encode the directive and return it as a bytes object.
+    """
     if name == 'DCD' or name == 'DCDU':
         operands = [x.strip() for x in operands.split(',')]
         encoded = b''
         if name == 'DCD':
-            encoded += b'\x00'*((4 - (address % 4)) % 4)#align
+            encoded += b'\x00'*((4 - (address % 4)) % 4)  # align
         for op in operands:
             i = helpers.numeric_literal_to_int(op)
             encoded += helpers.bigendian_to_littleendian(helpers.encode_32bit([(0, 32, i)]))
@@ -90,14 +97,14 @@ Encodes the directive and returns it as a bytes object"""
         operands = [x.strip() for x in operands.split(',')]
         encoded = b''
         if name == 'DCW':
-            encoded += b'\x00'*(address % 2)#align
+            encoded += b'\x00'*(address % 2)  # align
         for op in operands:
             i = helpers.numeric_literal_to_int(op)
             encoded += helpers.bigendian_to_littleendian_16bit(helpers.encode_16bit([(0, 16, i)]))
         return encoded
     if name == 'ALIGN':
         operands = [x.strip() for x in operands.split(',')]
-        if len(operands) == 0 or len(operands[0]) == 0:#implicit alignment to 4 bytes
+        if len(operands) == 0 or len(operands[0]) == 0:  # implicit alignment to 4 bytes
             alignment = 4
         else:
             alignment = helpers.numeric_literal_to_int(operands[0])
@@ -116,8 +123,8 @@ Encodes the directive and returns it as a bytes object"""
                 for c in op:
                     c = ord(c)
                     encoded += bytes([c])
-            else:#is valid numeric literal because has to be checked before
+            else:  # is valid numeric literal because has to be checked before
                 i = helpers.numeric_literal_to_int(op)
                 encoded += bytes([i])
         return encoded
-    return b''#should never be reached
+    return b''  # should never be reached

@@ -1,8 +1,11 @@
 import helpers
 
+
 def check_coprocregtransop(name, operands):
-    """Assumes valid name, valid name+flags combination, valid condcode
-checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     operands = [x.strip() for x in operands.split(',')]
     if len(operands) != 5 and len(operands) != 6:
         return 'Invalid number of operands. Expected 5 or 6, got %i' % len(operands)
@@ -24,9 +27,12 @@ checks the operands and returns an error string if invalid, empty string otherwi
         return 'Must be in range 0 to 7'
     return ''
 
+
 def encode_coprocregtransop(name, condcode, operands):
-    """check_coprocregtransop must be called before this
-encodes the instruction and returns it as a bytes object"""
+    """
+    check_coprocregtransop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
     operands = [x.strip() for x in operands.split(',')]
     cpnum = int(operands[0][1:])
     cpopc = helpers.numeric_literal_to_int(operands[1])
@@ -39,5 +45,7 @@ encodes the instruction and returns it as a bytes object"""
         cp = 0
     lflag = (name == 'MRC')
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 4, 0xE), (21, 3, cpopc), (20, 1, lflag), (16, 4, crn), (12, 4, rd), (8, 4, cpnum), (5, 3, cp), (4, 1, 0x1), (0, 4, crm)])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 4, 0xE), (21, 3, cpopc),
+                                    (20, 1, lflag), (16, 4, crn), (12, 4, rd),
+                                    (8, 4, cpnum), (5, 3, cp), (4, 1, 0x1), (0, 4, crm)])
     return helpers.bigendian_to_littleendian(encoded)

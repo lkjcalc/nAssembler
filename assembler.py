@@ -1,36 +1,44 @@
-#assembly language details:
-#of the operations dealing with the coprocessor only MRC and MCR are supported (the others (LDC, STC, CDP) are useless on the nspire)
-#labels may not have any whitespace before them, instructions have to have whitespace before them
+# assembly language details:
+# of the operations dealing with the coprocessor only MRC and MCR are supported (the others (LDC, STC, CDP) are useless on the nspire)
+# labels may not have any whitespace before them, instructions have to have whitespace before them
 
 import armasm_new
 
+
 def printerror(filename, linenum, line, msg):
+    """Print an error message using the supplied information."""
     print('Error in file "%s" on line %i:%s' % (filename, linenum, line))
     print('\t%s' % (msg))
 
+
 def printmsg(msg):
+    """Print msg."""
     print(msg)
 
+
 def gettext(filename):
-    """returns a list of all lines in the file"""
+    """Return a list of all lines in the file."""
     f = open(filename, 'r')
     text = f.read()
     f.close()
     return text.split('\n')
 
+
 def assembler(infile, outfile):
-    """assembles infile and writes the binary to outfile
-returns -1 on failure, 0 on success"""
+    """
+    Assemble infile and write the binary to outfile.
+    Return -1 on failure, 0 on success.
+    """
     numerrs = 0
     curaddr = 0
     labeldict = {}
     text = gettext(infile)
     code = []
-    #create list of Sourceline objects containing the lines of code
+    # create list of Sourceline objects containing the lines of code
     for l in text:
         code.append(armasm_new.Sourceline(l))
 
-    #stage 1: parse comments, labels and operation names
+    # stage 1: parse comments, labels and operation names
     for i, c in enumerate(code):
         if c.parse_comments() == -1:
             if len(c.errmsg) > 0:
@@ -57,7 +65,7 @@ returns -1 on failure, 0 on success"""
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    #stage 2: calculate length and address of every instruction
+    # stage 2: calculate length and address of every instruction
     curaddr = 0
     for i, c in enumerate(code):
         if c.set_length_and_address(curaddr) == -1:
@@ -72,7 +80,7 @@ returns -1 on failure, 0 on success"""
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    #stage 3: create a dictionary of labels
+    # stage 3: create a dictionary of labels
     for i, c in enumerate(code):
         if len(c.label) > 0:
             if c.label in labeldict:
@@ -84,7 +92,7 @@ returns -1 on failure, 0 on success"""
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    #stage 4: evaluate/replace pseudo-instructions and some directives (not implemented yet, todo)
+    # stage 4: evaluate/replace pseudo-instructions and some directives
     for i, c in enumerate(code):
         if c.replace_pseudoinstructions(labeldict) == -1:
             if len(c.errmsg) > 0:
@@ -92,12 +100,12 @@ returns -1 on failure, 0 on success"""
             else:
                 printerror(infile, i, c.line, 'unknown error in replace_pseudoinstructions')
             numerrs += 1
-            continue    
+            continue
     if numerrs != 0:
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    #stage 5: check syntax, encode all instructions and directives
+    # stage 5: check syntax, encode all instructions and directives
     for i, c in enumerate(code):
         if c.assemble(labeldict) == -1:
             if len(c.errmsg) > 0:
@@ -110,22 +118,12 @@ returns -1 on failure, 0 on success"""
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    #stage 6: write output to file
-    #binary = b''
+    # stage 6: write output to file
     binary = bytearray()
     for c in code:
         for b in c.get_hex():
             binary.append(b)
-        #binary += c.get_hex()
     f = open(outfile, 'wb')
     f.write(bytearray([ord(c) for c in 'PRG\x00']))
-    #f.write(b'PRG\x00')
     f.write(binary)
     f.close()
-
-##    #debug cmdline output:
-##    for i, c in enumerate(code):
-##        print(''.join(['%.2x' % (b) for b in c.get_hex()]), c.line)
-##    
-##    for i, c in enumerate(code):
-##        print(''.join(['%.2x' % (b) for b in c.get_hex()]), end = ' ')

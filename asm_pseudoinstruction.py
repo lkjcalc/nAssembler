@@ -1,8 +1,11 @@
 import helpers
 
+
 def check_pseudoinstruction(name, operands, address, labeldict):
-    """Assumes valid name, valid name+flags combination, valid condcode
-checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     if name == 'ADR':
         reg, expr = [x.strip() for x in operands.split(',', maxsplit=1)]
         if not helpers.is_reg(reg):
@@ -17,14 +20,15 @@ checks the operands and returns an error string if invalid, empty string otherwi
         return ''
     return 'Unknown pseudoinstruction (bug)'
 
+
 def get_replacement(name, operands, address, labeldict):
-    """check_pseudoinstruction must be called before this, and it must be a pseudoinstruction
-returns replacement opname and operands"""
+    """
+    check_pseudoinstruction must be called before this, and it must be a pseudoinstruction.
+    Return replacement opname and operands.
+    """
     if name == 'ADR':
-        #ADR{cond} register,expr; expr is program relative expression, can be encoded for ADD or SUB op2
         reg, expr = [x.strip() for x in operands.split(',', maxsplit=1)]
         offs = helpers.pcrelative_expression_to_int(expr, address, labeldict)
-        #ADD reg, PC, offs
         sign, rot, imv = helpers.int_to_signrotimv(offs)
         if sign == 1:
             newop = 'ADD'
@@ -33,4 +37,3 @@ returns replacement opname and operands"""
         newoperands = '%s, PC, #%i' % (reg, sign*offs)
         return (newop, newoperands)
     return None
-

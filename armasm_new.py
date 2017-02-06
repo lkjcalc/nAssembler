@@ -1,5 +1,6 @@
-#functions return -1 on failure
-#member functions prefixed with an underline must not be called from outside the class
+# functions return -1 on failure.
+# member functions prefixed with an underline must not
+# be called from outside the class.
 
 import helpers
 import size
@@ -12,22 +13,24 @@ import asm_datatrans
 import asm_blockdatatrans
 import asm_pseudoinstructions
 
+
 class Sourceline:
-    #line #the full string
-    #notcomment #everything except comments
-    #label
-    #operation #everything after the label
-    #opname
-    #flags
-    #condcode
-    #operands
-    #address
-    #hexcode
-    #length
-    #errmsg #should contain a string describing the error if a function fails and returns -1
+    # line  # the full string
+    # notcomment  # everything except comments
+    # label
+    # operation  # everything after the label
+    # opname
+    # flags
+    # condcode
+    # operands
+    # address
+    # hexcode
+    # length
+    # errmsg  # contains a string describing the error if a function
+    #           fails and returns -1
 
     def __init__(self, inst):
-        """initializes all data members to their empty/unprocessed-value except self.line to inst"""
+        """Initialize all data members to their empty/unprocessed-value except self.line to inst."""
         self.line = inst
         self.notcomment = ''
         self.label = ''
@@ -42,8 +45,10 @@ class Sourceline:
         self.errmsg = ''
 
     def _parse_s_suffix(self):
-        """if self.opname is an an op with an (arithmetic) S-suffix, remove that suffix and set self.flags to S"""
-        soplist = ['ADC', 'ADD', 'RSB', 'RSC', 'SBC', 'SUB', 'AND', 'BIC', 'EOR', 'ORR', 'MOV', 'MVN', 'MUL', 'MLA', 'UMULL', 'SMULL', 'UMLAL', 'SMLAL']
+        """If self.opname is an an op with an (arithmetic) S-suffix, remove that suffix and set self.flags to S."""
+        soplist = ['ADC', 'ADD', 'RSB', 'RSC', 'SBC', 'SUB', 'AND',
+                   'BIC', 'EOR', 'ORR', 'MOV', 'MVN', 'MUL', 'MLA',
+                   'UMULL', 'SMULL', 'UMLAL', 'SMLAL']
         for op in soplist:
             if self.opname.startswith(op):
                 if (self.opname[:-3] == op and helpers.is_condcode(self.opname[-3:-1]) and self.opname[-1] == 'S')\
@@ -53,7 +58,7 @@ class Sourceline:
                     break
 
     def _parse_tbhs_suffixes(self):
-        """if self.opname is an op with T, B, H or S-suffixes, remove that (those) suffix(es) and set self.flags to those"""
+        """If self.opname is an op with T, B, H or S-suffixes, remove that (those) suffix(es) and set self.flags to those."""
         tbhsoplist = ['LDR', 'STR', 'SWP']
         for op in tbhsoplist:
             if self.opname.startswith(op):
@@ -72,9 +77,10 @@ class Sourceline:
                 break
 
     def _parse_addrmode_suffixes(self):
-        """if self.opname is a multiple data processing instruction, remove the suffix and set self.flags to it"""
+        """If self.opname is a multiple data processing instruction, remove the suffix and set self.flags to it."""
         addrsuffoplist = ['LDM', 'STM']
-        addressingmodelist = ['FD', 'ED', 'FA', 'EA', 'IA', 'IB', 'DA', 'DB']
+        addressingmodelist = ['FD', 'ED', 'FA', 'EA', 'IA', 'IB',
+                              'DA', 'DB']
         for op in addrsuffoplist:
             if self.opname.startswith(op):
                 if (self.opname[:-4] == op and helpers.is_condcode(self.opname[-4:-2]) and self.opname[-2:] in addressingmodelist)\
@@ -84,7 +90,7 @@ class Sourceline:
                     break
 
     def _parse_condition_code(self):
-        """if there's a condition code in self.opname, remove it there and set self.condcode to it"""
+        """If there is a condition code in self.opname, remove it there and set self.condcode to it."""
         if helpers.is_opname(self.opname+self.flags):
             return
         if helpers.is_condcode(self.opname[-2:]):
@@ -92,8 +98,10 @@ class Sourceline:
             self.opname = self.opname[:-2]
 
     def _check_operation(self):
-        """checks if self forms a valid operation, fills errmsg if not
-returns 0 if correct, -1 if not correct"""
+        """
+        Check if self forms a valid operation, fill errmsg if not.
+        Return 0 if valid, -1 if invalid.
+        """
         if not helpers.is_opname(self.opname+self.flags):
             self.errmsg = 'This instruction (name:%s, flags:%s) is unknown' % (self.opname, self.flags)
             return -1
@@ -107,8 +115,10 @@ returns 0 if correct, -1 if not correct"""
         return 0
 
     def _check_label(self):
-        """checks if self.label is allowed (i.e. not private or containing illegal characters), fills errmsg if not
-returns 0 if correct, -1 if not correct"""
+        """
+        Check if self.label is allowed (i.e. not private or containing illegal characters), fill errmsg if not.
+        Return 0 if correct, -1 if not correct.
+        """
         if not helpers.is_valid_label(self.label):
             self.errmsg = 'This label contains illegal characters (label:%s)' % (self.label)
             return -1
@@ -118,9 +128,11 @@ returns 0 if correct, -1 if not correct"""
         return 0
 
     def parse_comments(self):
-        """self must be initialized and not yet parsed
-sets self.notcomment to self.line stripped from comments
-returns 0"""
+        """
+        self must be initialized and not yet parsed.
+        Set self.notcomment to self.line stripped from comments.
+        Return 0.
+        """
         sci = self.line.find(';')
         dqi = self.line.find('"')
         if sci < dqi or dqi == -1:
@@ -128,9 +140,9 @@ returns 0"""
                 self.notcomment = self.line
             else:
                 self.notcomment = self.line[:sci]
-        else:#there is a ; and a " before it
-            tmpline = self.line.replace('\\"', '""')#TODO: test #replace c-style escaped " with "", which is the arm asm way of getting a single " inside a string. don't have to care about cases where it's outside a string, because that will be a syntax error later on anyway. sci is still correct.
-            while tmpline.count('"', 0, sci) % 2 != 0:#if the number of quotes before the semicolon is odd, the semicolon is inside a string
+        else:  # there is a ; and a " before it
+            tmpline = self.line.replace('\\"', '""')  # TODO: test #replace c-style escaped " with "", which is the arm asm way of getting a single " inside a string. don't have to care about cases where it's outside a string, because that will be a syntax error later on anyway. sci is still correct.
+            while tmpline.count('"', 0, sci) % 2 != 0:  # if the number of quotes before the semicolon is odd, the semicolon is inside a string
                 sci = self.line.find(';', sci+1)
                 if sci == -1:
                     break
@@ -138,13 +150,15 @@ returns 0"""
                 self.notcomment = self.line
             else:
                 self.notcomment = self.line[:sci]
-        self.notcomment = self.notcomment.rstrip()#whitespace in front is relevant!
+        self.notcomment = self.notcomment.rstrip()  # whitespace in front is relevant!
         return 0
 
     def parse_labelpart(self):
-        """self must be processed by parse_comments but nothing after that
-sets self.label to the label, sets self.operation to the rest of the line (stripped from whitespace)
-returns 0 on success, -1 on failure/error"""
+        """
+        self must be processed by parse_comments but nothing after that.
+        Set self.label to the label, set self.operation to the rest of the line (stripped from whitespace).
+        Return 0 on success, -1 on failure/error.
+        """
         if self.notcomment[:1].isspace():
             self.operation = self.notcomment.strip()
             return 0
@@ -153,7 +167,7 @@ returns 0 on success, -1 on failure/error"""
             return 0
         elif len(splitr) == 1:
             self.label = splitr[0]
-        else:#len(splitr) == 2
+        else:  # len(splitr) == 2
             self.label = splitr[0]
             self.operation = splitr[1].strip()
         if self._check_label() == -1:
@@ -161,16 +175,18 @@ returns 0 on success, -1 on failure/error"""
         return 0
 
     def parse_namepart(self):
-        """self must be processed by parse_labelpart but nothing after
-parses self.operation: the operation name with suffixes and stuff, sets self.opname, self.flags, self.condcode (defaults to AL if conditionable) to the computed values. stores the rest in self.operands
-returns 0 on success, -1 on failure/error"""
+        """
+        self must be processed by parse_labelpart but nothing after.
+        Parse self.operation: the operation name with suffixes and stuff, set self.opname, self.flags, self.condcode (defaults to AL if conditionable) to the computed values. Store the rest in self.operands.
+        Return 0 on success, -1 on failure/error.
+        """
         splitr = self.operation.split(None, 1)
         if len(splitr) == 0:
             return 0
         elif len(splitr) == 1:
             oppart = splitr[0]
             operators = ''
-        else:#len(splitr) == 2
+        else:  # len(splitr) == 2
             (oppart, operators) = splitr
         self.opname = oppart.upper().strip()
         self.operands = operators.strip()
@@ -178,46 +194,56 @@ returns 0 on success, -1 on failure/error"""
         self._parse_tbhs_suffixes()
         self._parse_addrmode_suffixes()
         self._parse_condition_code()
-        if len(self.condcode) == 0 and helpers.is_conditionable(self.opname+self.flags):
+        if len(self.condcode) == 0\
+           and helpers.is_conditionable(self.opname+self.flags):
             self.condcode = 'AL'
         if self._check_operation() == -1:
             return -1
         return 0
 
     def set_length_and_address(self, address):
-        """self must be processed by parse_namepart
-sets self.address to address and calculates and sets self.length
-returns 0 on success, -1 on failure"""
+        """
+        self must be processed by parse_namepart.
+        Set self.address to address and calculate and set self.length.
+        Return 0 on success, -1 on failure.
+        """
         self.address = address
         if len(self.opname+self.flags) == 0:
             self.length = 0
         else:
-            self.length = size.get_size(self.opname+self.flags, self.operands, address)
+            self.length = size.get_size(self.opname+self.flags,
+                                        self.operands, address)
         if self.length == -1:
             self.errmsg = 'Could not calculate instruction size'
             return -1
         return 0
 
     def get_length(self):
-        """self must be processed by set_length_and_address
-returns self.length"""
+        """
+        self must be processed by set_length_and_address.
+        Return self.length.
+        """
         return self.length
 
     def replace_pseudoinstructions(self, labeldict):
-        """self must be processed by set_length_and_address
-replaces self.opname, self.operands of pseudoinstructions
-returns 0 on success, -1 on failure"""
+        """
+        self must be processed by set_length_and_address.
+        Replace self.opname, self.operands of pseudoinstructions.
+        Return 0 on success, -1 on failure.
+        """
         if helpers.is_pseudoinstruction(self.opname, self.operands):
             err = asm_pseudoinstruction.check_pseudoinstruction(self.opname, self.operands, self.address, labeldict)
             if len(err) != 0:
                 self.errmsg = err
                 return -1
-            self.opname, self.operands =  asm_pseudoinstruction.get_replacement(self.opname, self.operands, self.address, labeldict)
+            self.opname, self.operands = asm_pseudoinstruction.get_replacement(self.opname, self.operands, self.address, labeldict)
         return 0
 
     def _check_syntax(self, labeldict):
-        """self must be processed by replace_pseudoinstructions
-returns error message string, empty string if no error"""
+        """
+        self must be processed by replace_pseudoinstructions.
+        Return error message string, empty string if no error.
+        """
         fullname = self.opname+self.flags
         if helpers.is_directive(fullname):
             return asm_directive.check_directive(self.opname, self.operands)
@@ -247,8 +273,10 @@ returns error message string, empty string if no error"""
             return 'Unknown or not implemented instruction (failed in _check_syntax)'
 
     def _encode_line(self, labeldict):
-        """self must be processed by _check_syntax
-returns encoded line as a bytes object"""
+        """
+        self must be processed by _check_syntax.
+        Return encoded line as a bytearray object.
+        """
         fullname = self.opname+self.flags
         if helpers.is_directive(fullname):
             return asm_directive.encode_directive(self.opname, self.operands, self.address)
@@ -276,11 +304,13 @@ returns encoded line as a bytes object"""
             return asm_blockdatatrans.encode_blockdatatransop(self.opname, self.flags, self.condcode, self.operands)
         else:
             return b''
-        
+
     def assemble(self, labeldict):
-        """self must be processed by replace_pseudoinstructions
-sets self.hexcode to the binary machine code corresponding to self
-returns 0 on success, -1 on failure"""
+        """
+        self must be processed by replace_pseudoinstructions.
+        Set self.hexcode to the binary machine code corresponding to self.
+        Return 0 on success, -1 on failure.
+        """
         if len(self.opname) == 0:
             return 0
         err = self._check_syntax(labeldict)
@@ -294,6 +324,8 @@ returns 0 on success, -1 on failure"""
         return 0
 
     def get_hex(self):
-        """self must be processed by assemble
-returns self.hexcode"""
+        """
+        self must be processed by assemble.
+        Return self.hexcode.
+        """
         return self.hexcode

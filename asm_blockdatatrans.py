@@ -1,8 +1,11 @@
 import helpers
 
+
 def check_blockdatatransop(name, operands):
-    """Assumes valid name, valid name+flags combination, valid condcode
-checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) < 2:
         return 'Too few operands'
@@ -43,7 +46,7 @@ checks the operands and returns an error string if invalid, empty string otherwi
             end = helpers.get_reg_num(r[1])
             if start >= end:
                 return 'Registers must be specified in ascending order'
-            reglist += list(range(start, end+1))#upy needs explicit conversion
+            reglist += list(range(start, end+1))  # upy needs explicit conversion
         else:
             if not helpers.is_reg(op):
                 return 'Expected register'
@@ -51,15 +54,18 @@ checks the operands and returns an error string if invalid, empty string otherwi
     for i in range(0, len(reglist)-1):
         if reglist[i] >= reglist[i+1]:
             return 'Registers must be specified in ascending order'
-    if sbit and writeback and (name == 'STM' or (name == 'LDM' and not 15 in reglist)):
+    if sbit and writeback and (name == 'STM' or (name == 'LDM' and 15 not in reglist)):
         return 'Writeback may not be used combined with user bank transfer'
     if writeback and name == 'LDM' and base in reglist:
         return 'Attention: Writeback is useless here because the loaded value will overwrite it'
-    return ''    
+    return ''
+
 
 def encode_blockdatatransop(name, flags, condcode, operands):
-    """check_blockdatatransop must be called before this
-encodes the instruction and returns it as a bytes object"""
+    """
+    check_blockdatatransop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
     operands = [x.strip() for x in operands.split(',')]
     if operands[0][-1] == '!':
         writeback = True
@@ -72,21 +78,25 @@ encodes the instruction and returns it as a bytes object"""
         operands[-1] = operands[-1][:-1].strip()
     else:
         sbit = False
-    operands[1] = operands[1][1:].strip()#strip the curly brackets
+    operands[1] = operands[1][1:].strip()  # strip the curly brackets
     operands[-1] = operands[-1][:-1].strip()
     reglist = []
     for op in operands[1:]:
         if '-' in op:
             (start, end) = [helpers.get_reg_num(r.strip()) for r in op.split('-')]
-            reglist += list(range(start, end+1))#upy needs explicit conversion
+            reglist += list(range(start, end+1))  # upy needs explicit conversion
         else:
             reglist.append(helpers.get_reg_num(op))
     regfield = 0
     for r in reglist:
         regfield |= (1 << r)
     lflag = (name == 'LDM')
-    addrmodedict = {'ED' : (lflag, lflag), 'IB' : (1, 1), 'FD' : (lflag, not lflag), 'IA' : (1, 0), 'EA' : (not lflag, lflag), 'DB' : (0, 1), 'FA' : (not lflag, not lflag), 'DA' : (0, 0)}
+    addrmodedict = {'ED': (lflag, lflag), 'IB': (1, 1), 'FD': (lflag, not lflag),
+                    'IA': (1, 0), 'EA': (not lflag, lflag), 'DB': (0, 1),
+                    'FA': (not lflag, not lflag), 'DA': (0, 0)}
     (uflag, pflag) = addrmodedict[flags]
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (25, 3, 0x4), (24, 1, pflag), (23, 1, uflag), (22, 1, sbit), (21, 1, writeback), (20, 1, lflag), (16, 4, base), (0, 16, regfield)])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (25, 3, 0x4), (24, 1, pflag),
+                                    (23, 1, uflag), (22, 1, sbit), (21, 1, writeback),
+                                    (20, 1, lflag), (16, 4, base), (0, 16, regfield)])
     return helpers.bigendian_to_littleendian(encoded)

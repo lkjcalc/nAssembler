@@ -1,37 +1,39 @@
 import helpers
 
+
 def is_valid_addresspart(hsflag, addresspart, tflag, address, labeldict):
-    """hsflag = True -> selects syntax checking for halfword or signed data transfer instructions, False selects normal unsigned word/byte transfer syntax
-address must be the address of this instruction
-returns empty string if addresspart is valid according to the syntax rules for datatransfer address part
-error string otherwise"""
+    """
+    hsflag = True -> selects syntax checking for halfword or signed data transfer instructions, False selects normal unsigned word/byte transfer syntax.
+    Address must be the address of this instruction.
+    Return empty string if addresspart is valid according to the syntax rules for datatransfer address part, error string otherwise.
+    """
     if len(addresspart) < 1:
         return 'Address part is missing'
-    if addresspart[0] != '[':#must be an expression (label) if not starting with a bracket
-        if not addresspart in labeldict:
+    if addresspart[0] != '[':  # must be an expression (label) if not starting with a bracket
+        if addresspart not in labeldict:
             return 'Expected bracket or label'
         offset = labeldict[addresspart] - address - 8
-        addresspart = '[PC, #'+str(offset)+']'#range check done below
+        addresspart = '[PC, #'+str(offset)+']'  # range check done below
     writeback = False
     if addresspart[-1] == '!':
         writeback = True
-        addresspart = addresspart[:-1].strip()#strip the trailing !
+        addresspart = addresspart[:-1].strip()  # strip the trailing !
     if addresspart[-1] == ']':
         preindexed = True
-        addresspart = addresspart[:-1].strip()#strip the trailing ]
+        addresspart = addresspart[:-1].strip()  # strip the trailing ]
     else:
         if writeback:
             return '! is only allowed for preindexed addressing'
         preindexed = False
-    addresspart = addresspart[1:].strip()#strip the leading [
+    addresspart = addresspart[1:].strip()  # strip the leading [
     addresspart = [x.strip() for x in addresspart.split(',')]
     if len(addresspart) < 1 or len(addresspart) > 3 or (hsflag and len(addresspart) > 2):
         return 'Invalid addresspart'
     if not preindexed:
         if addresspart[0][-1:] != ']':
             return 'Expected closing ]'
-        addresspart[0] = addresspart[0][:-1].strip()#strip the trailing ]
-    #there should be no syntax differences between pre- and post-indexing left
+        addresspart[0] = addresspart[0][:-1].strip()  # strip the trailing ]
+    # there should be no syntax differences between pre- and post-indexing left
     if not helpers.is_reg(addresspart[0]):
         return 'Expected register as base'
     if writeback and helpers.get_reg_num(addresspart[0]) == 15:
@@ -68,7 +70,7 @@ error string otherwise"""
             return ''
         if hsflag:
             return 'Expected less operands'
-        #addresspart[2] should be a shift:
+        # addresspart[2] should be a shift:
         if len(addresspart[2]) < 3:
             return 'Invalid shift expression'
         shift = addresspart[2]
@@ -95,8 +97,10 @@ error string otherwise"""
 
 
 def check_singledatatransop(flags, operands, address, labeldict):
-    """Assumes valid name, valid name+flags combination, valid condcode
-Checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     tflag = 'T' in flags
     operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) != 2:
@@ -108,9 +112,12 @@ Checks the operands and returns an error string if invalid, empty string otherwi
         return err
     return ''
 
+
 def check_halfsigneddatatransop(operands, address, labeldict):
-    """Assumes valid name, valid name+flags combination, valid condcode
-Checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     operands = [x.strip() for x in operands.split(',', 1)]
     if len(operands) != 2:
         return 'Expected more operands'
@@ -120,11 +127,13 @@ Checks the operands and returns an error string if invalid, empty string otherwi
     if len(err) > 0:
         return err
     return ''
-    
+
 
 def parse_datatrans(name, operands, address, labeldict):
-    """check_singledatatransop or check_halfsigneddatatransop must be called before this
-Does the work common to halfsigned and normal datatrans encoding"""
+    """
+    check_singledatatransop or check_halfsigneddatatransop must be called before this.
+    Does the stuff common to halfsigned and normal datatrans encoding.
+    """
     if operands.count('[') == 0:
         label = operands.split(',')[1].strip()
         offset = labeldict[label] - address - 8
@@ -147,7 +156,7 @@ Does the work common to halfsigned and normal datatrans encoding"""
     iflag = False
     if len(operands) > 2:
         if helpers.is_valid_imval(operands[2]):
-            iflag = False #!!!
+            iflag = False  # !!!
             offset = helpers.imval_to_int(operands[2])
             upflag = (offset >= 0)
             offset = abs(offset)
@@ -163,7 +172,7 @@ Does the work common to halfsigned and normal datatrans encoding"""
             shiftfield = 0
             if len(operands) == 4:
                 shift = [x.strip() for x in operands[3].split()]
-                if len(shift) == 1:#RRX
+                if len(shift) == 1:  # RRX
                     shifttype = 'ROR'
                     shiftby = 0
                 else:
@@ -173,36 +182,51 @@ Does the work common to halfsigned and normal datatrans encoding"""
                         shifttype = 'LSL'
                     if shifttype.upper() in ['LSR', 'ASR'] and shiftby == 32:
                         shiftby = 0
-                shiftfield = (shiftby << 3) | {'LSL' : 0, 'ASL' : 0, 'LSR' : 1, 'ASR' : 2, 'ROR' : 3}[shifttype.upper()] << 1
+                shiftfield = (shiftby << 3) | {'LSL': 0, 'ASL': 0, 'LSR': 1, 'ASR': 2, 'ROR': 3}[shifttype.upper()] << 1
             offset = (shiftfield << 4) | rm
     return (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset)
 
+
 def encode_singledatatransop(name, flags, condcode, operands, address, labeldict):
-    """check_singledatatransop must be called before this
-Encodes the instruction and returns it as a bytes object"""
+    """
+    check_singledatatransop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
     (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(name, operands, address, labeldict)
     if 'T' in flags:
         writeback = True
     byteflag = ('B' in flags)
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (26, 2, 0x1), (25, 1, iflag), (24, 1, preindexed), (23, 1, upflag), (22, 1, byteflag), (21, 1, writeback), (20, 1, loadflag), (16, 4, rn), (12, 4, rd), (0, 12, offset)])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (26, 2, 0x1), (25, 1, iflag),
+                                    (24, 1, preindexed), (23, 1, upflag), (22, 1, byteflag),
+                                    (21, 1, writeback), (20, 1, loadflag), (16, 4, rn),
+                                    (12, 4, rd), (0, 12, offset)])
     return helpers.bigendian_to_littleendian(encoded)
 
+
 def encode_halfsigneddatatransop(name, flags, condcode, operands, address, labeldict):
-    """check_halfsigneddatatransop must be called before this
-Encodes the instruction and returns it as a bytes object"""
+    """
+    check_halfsigneddatatransop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
     (writeback, preindexed, loadflag, upflag, iflag, rd, rn, offset) = parse_datatrans(name, operands, address, labeldict)
-    assert not (offset & 0xF00)#either iflag and only lowest 4 bit used or not iflag and only lowest 8 bit used
+    assert not (offset & 0xF00)  # either iflag and only lowest 4 bit used or not iflag and only lowest 8 bit used
     assert (not iflag) or not (offset & 0xFF0)
     hflag = ('H' in flags)
     sflag = ('S' in flags)
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 1, preindexed), (23, 1, upflag), (22, 1, not iflag), (21, 1, writeback), (20, 1, loadflag), (16, 4, rn), (12, 4, rd), (8, 4, offset>>4), (7, 1, 0x1), (6, 1, sflag), (5, 1, hflag), (4, 1, 0x1), (0, 4, offset)])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (24, 1, preindexed), (23, 1, upflag),
+                                    (22, 1, not iflag), (21, 1, writeback), (20, 1, loadflag),
+                                    (16, 4, rn), (12, 4, rd), (8, 4, offset >> 4), (7, 1, 0x1),
+                                    (6, 1, sflag), (5, 1, hflag), (4, 1, 0x1), (0, 4, offset)])
     return helpers.bigendian_to_littleendian(encoded)
 
+
 def check_swapop(operands):
-    """Assumes valid name, valid name+flags combination, valid condcode
-Checks the operands and returns an error string if invalid, empty string otherwise"""
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
     operands = [x.strip() for x in operands.split(',')]
     if len(operands) != 3:
         return 'Expected 3 operands, got %i' % (len(operands))
@@ -217,16 +241,20 @@ Checks the operands and returns an error string if invalid, empty string otherwi
     for op in operands:
         if helpers.get_reg_num(op) == 15:
             return 'PC is not allowed here'
-    return ''        
+    return ''
+
 
 def encode_swapop(name, flags, condcode, operands):
-    """check_swapop must be called before this
-Encodes the instruction and returns it as a bytes object"""
+    """
+    check_swapop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
     operands = [x.strip() for x in operands.split(',')]
     operands[2] = operands[2][1:-1].strip()
     operands = [helpers.get_reg_num(x) for x in operands]
     byteflag = (flags == 'B')
     ccval = helpers.get_condcode_value(condcode)
-    encoded = helpers.encode_32bit([(28, 4, ccval), (23, 5, 0x2), (22, 1, byteflag), (16, 4, operands[2]), (12, 4, operands[0]), (4, 4, 0x9), (0, 4, operands[1])])
+    encoded = helpers.encode_32bit([(28, 4, ccval), (23, 5, 0x2), (22, 1, byteflag),
+                                    (16, 4, operands[2]), (12, 4, operands[0]),
+                                    (4, 4, 0x9), (0, 4, operands[1])])
     return helpers.bigendian_to_littleendian(encoded)
-

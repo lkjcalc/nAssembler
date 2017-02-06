@@ -1,9 +1,12 @@
 import helpers
 
+
 def get_size(name, operands, address):
-    """name must be the name of a directive or instruction in uppercase, operands the operands, address the address where it is
-returns the length of op (in bytes) (assuming passed address)
-returns -1 on failure (invalid name)"""
+    """
+    name must be the name of a directive or instruction in uppercase, operands the operands, address the address where it is.
+    Return the length of op (in bytes) (assuming passed address),
+    or return -1 on failure (invalid name)
+    """
     if not helpers.is_opname(name):
         print('DEBUG: TODO remove. not is_opname. "%s"' % (name))
         return -1
@@ -15,10 +18,13 @@ returns -1 on failure (invalid name)"""
         issueerror('internal error in get_length')
         return -1
 
+
 def get_directive_size(name, operands, address):
-    """doesn't check the syntax or the content, just returns how many bytes it will be if it's valid
-name must be the name of a directive in uppercase, operands the operands, address the address where it is
-returns -1 on failure (invalid name)"""
+    """
+    Do not check the syntax or the content, just return how many bytes it will be if it is valid.
+    name must be the name of a directive in uppercase, operands the operands, address the address where it is.
+    Return -1 on failure (invalid name).
+    """
     if name == 'DCD' or name == 'DCDU':
         padding = 0
         if name == 'DCD':
@@ -54,8 +60,11 @@ returns -1 on failure (invalid name)"""
     else:
         return -1
 
+
 def get_instruction_size(name, operands, address):
-    """doesn't check the syntax or the content, just returns how many bytes it will be if it's valid
-name must be the name of an instruction in uppercase, operands the operands, address the address where it is
-returns -1 on failure (invalid name)"""
+    """
+    Do not check the syntax or the content, just return how many bytes it will be if it is valid.
+    name must be the name of a directive in uppercase, operands the operands, address the address where it is.
+    Return -1 on failure (invalid name).
+    """
     return 4
