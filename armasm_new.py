@@ -1,6 +1,5 @@
 # functions return -1 on failure.
-# member functions prefixed with an underline must not
-# be called from outside the class.
+# member functions prefixed with an underline must not be called from outside the class.
 
 import helpers
 import size
@@ -194,8 +193,7 @@ class Sourceline:
         self._parse_tbhs_suffixes()
         self._parse_addrmode_suffixes()
         self._parse_condition_code()
-        if len(self.condcode) == 0\
-           and helpers.is_conditionable(self.opname+self.flags):
+        if len(self.condcode) == 0 and helpers.is_conditionable(self.opname+self.flags):
             self.condcode = 'AL'
         if self._check_operation() == -1:
             return -1
@@ -211,8 +209,7 @@ class Sourceline:
         if len(self.opname+self.flags) == 0:
             self.length = 0
         else:
-            self.length = size.get_size(self.opname+self.flags,
-                                        self.operands, address)
+            self.length = size.get_size(self.opname+self.flags, self.operands, address)
         if self.length == -1:
             self.errmsg = 'Could not calculate instruction size'
             return -1
