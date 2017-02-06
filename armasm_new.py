@@ -10,7 +10,7 @@ import asm_mul
 import asm_cpregtrans
 import asm_datatrans
 import asm_blockdatatrans
-import asm_pseudoinstructions
+import asm_pseudoinstruction
 
 
 class Sourceline:
@@ -316,7 +316,7 @@ class Sourceline:
             return -1
         self.hexcode = self._encode_line(labeldict)
         if len(self.hexcode) != self.length:
-            self.errmsg = 'Precalculated length (%i bytes) and real length (%i bytes) are not the same' % (self.length, len(enc))
+            self.errmsg = 'Precalculated length (%i bytes) and real length (%i bytes) are not the same' % (self.length, len(self.hexcode))
             return -1
         return 0
 

@@ -422,7 +422,7 @@ def is_dataproc_movop(s):
 
 
 def get_dataprocop_num(s):
-    dataprocopdict = {'ADC': 5,  'ADD': 4, 'RSB': 3, 'RSC': 7, 'SBC': 6, 'SUB': 2, 'AND': 0, 'BIC': 14,
+    dataprocopdict = {'ADC': 5, 'ADD': 4, 'RSB': 3, 'RSC': 7, 'SBC': 6, 'SUB': 2, 'AND': 0, 'BIC': 14,
                       'EOR': 1, 'ORR': 12, 'CMP': 10, 'CMN': 11, 'TEQ': 9, 'TST': 8, 'MOV': 13, 'MVN': 15}
     if s.upper() in dataprocopdict:
         return dataprocopdict[s.upper()]

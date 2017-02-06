@@ -15,7 +15,6 @@ def get_size(name, operands, address):
     elif helpers.is_opname(name):
         return get_instruction_size(name, operands, address)
     else:
-        issueerror('internal error in get_length')
         return -1
 
 
@@ -45,7 +44,7 @@ def get_directive_size(name, operands, address):
             alignment = helpers.imval_to_int('#'+operands[0])
         if len(operands) > 1:
             offset = helpers.imval_to_int('#'+operands[1])
-        return ((alignment - ((address+alignment-offset) % alignment)) % alignment)
+        return (alignment - ((address+alignment-offset) % alignment)) % alignment
     elif name == 'DCB':
         size = 0
         operands = operands.split(',')
