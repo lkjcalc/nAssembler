@@ -7,7 +7,7 @@ def check_pseudoinstruction(name, operands, address, labeldict):
     Check the operands and return an error string if invalid, empty string otherwise.
     """
     if name == 'ADR':
-        reg, expr = [x.strip() for x in operands.split(',', maxsplit=1)]
+        reg, expr = [x.strip() for x in operands.split(',', 1)]
         if not helpers.is_reg(reg):
             return 'Invalid operand: expected register'
         err = helpers.check_pcrelative_expression(expr, labeldict)
@@ -27,7 +27,7 @@ def get_replacement(name, operands, address, labeldict):
     Return replacement opname and operands.
     """
     if name == 'ADR':
-        reg, expr = [x.strip() for x in operands.split(',', maxsplit=1)]
+        reg, expr = [x.strip() for x in operands.split(',', 1)]
         offs = helpers.pcrelative_expression_to_int(expr, address, labeldict)
         sign, rot, imv = helpers.int_to_signrotimv(offs)
         if sign == 1:
