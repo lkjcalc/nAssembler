@@ -2,3 +2,6 @@ __pycache__/
 *.bin
 /tools/*
 !/tools/includer2.py
+/tests/testsrc
+/tests/testhashes
+
