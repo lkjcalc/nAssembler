@@ -45,7 +45,7 @@ def do_all_tests():
             if srcmd5 != get_known_md5_of_file(fname):
                 srchashchanged = True
                 print("WARNING: source hash changed for '{}'.".format(fname))
-                answer = input("Replace source md5 and calculate new binary md5? (Y/N)").toupper()
+                answer = input("Replace source md5 and calculate new binary md5? (Y/N)").upper()
                 if answer == 'N':
                     setnewhashes = False
                 else:
