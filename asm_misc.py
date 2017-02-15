@@ -158,3 +158,34 @@ def encode_swiop(name, condcode, operands):
     com = helpers.imval_to_int(operands)
     encoded = helpers.encode_32bit([(28, 4, ccval), (24, 4, 0xF), (0, 24, com)])
     return helpers.bigendian_to_littleendian(encoded)
+
+
+def check_miscarithmeticop(name, operands):
+    """
+    Assumes valid name, valid name+flags combination, valid condcode.
+    Check the operands and return an error string if invalid, empty string otherwise.
+    """
+    operands = [x.strip() for x in operands.split(',')]
+    if len(operands) != 2:
+        return 'Invalid number of operands: expected 2, got %i' % (len(operands))
+    if not helpers.is_reg(operands[0]):
+        return 'Invalid operand: expected register'
+    rd = helpers.get_reg_num(operands[0])
+    if not helpers.is_reg(operands[1]):
+        return 'Invalid operand: expected register'
+    rm = helpers.get_reg_num(operands[1])
+    if rd == 15 or rm == 15:
+        return 'PC is not allowed here'
+    return ''
+
+def encode_miscarithmeticop(name, condcode, operands):
+    """
+    check_miscarithmeticop must be called before this.
+    Encode the instruction and return it as a bytearray object.
+    """
+    operands = [x.strip() for x in operands.split(',')]
+    rd = helpers.get_reg_num(operands[0])
+    rm = helpers.get_reg_num(operands[1])
+    ccval = helpers.get_condcode_value(condcode)
+    encoded = helpers.encode_32bit([(28, 4, ccval), (16, 12, 0x16F), (12, 4, rd), (4, 8, 0xF1), (0, 4, rm)])
+    return helpers.bigendian_to_littleendian(encoded)

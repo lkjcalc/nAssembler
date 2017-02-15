@@ -266,6 +266,8 @@ class Sourceline:
             return asm_datatrans.check_swapop(self.operands)
         elif helpers.is_blockdatatransop(fullname):
             return asm_blockdatatrans.check_blockdatatransop(self.opname, self.operands)
+        elif helpers.is_miscarithmeticop(fullname):
+            return asm_misc.check_miscarithmeticop(self.opname, self.operands)
         else:
             return 'Unknown or not implemented instruction (failed in _check_syntax)'
 
@@ -299,6 +301,8 @@ class Sourceline:
             return asm_datatrans.encode_swapop(self.opname, self.flags, self.condcode, self.operands)
         elif helpers.is_blockdatatransop(fullname):
             return asm_blockdatatrans.encode_blockdatatransop(self.opname, self.flags, self.condcode, self.operands)
+        elif helpers.is_miscarithmeticop(fullname):
+            return asm_misc.encode_miscarithmeticop(self.opname, self.condcode, self.operands)
         else:
             return b''
 

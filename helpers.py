@@ -491,11 +491,17 @@ def is_pseudoinstructionop(s):
     return s.upper() in pseudoinstructionoplist
 
 
+def is_miscarithmeticop(s):
+    miscarithmeticoplist = ['CLZ']
+    return s.upper() in miscarithmeticoplist
+
+
 def is_opname(s):
     """Return True if s is a valid operation or directive name (full name, i.e. with flags!), False otherwise."""
     return is_directive(s) or is_dataprocop(s) or is_branchop(s) or is_psrtransop(s) or is_mulop(s)\
         or is_longmulop(s) or is_swiop(s) or is_singledatatransop(s) or is_halfsigneddatatransop(s)\
-        or is_swapop(s) or is_blockdatatransop(s) or is_coprocregtransop(s) or is_pseudoinstructionop(s)
+        or is_swapop(s) or is_blockdatatransop(s) or is_coprocregtransop(s) or is_pseudoinstructionop(s)\
+        or is_miscarithmeticop(s)
 
 
 def is_conditionable(s):
