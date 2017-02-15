@@ -27,15 +27,17 @@ IMPORTANT (syntax is not very flexible at the moment):
 -Two operands were three are required is not allowed (no implicit destination register), e.g. "ADD r0,#28" must be written out as "ADD r0,r0,#28"
 
 All usual instructions are supported:
-ADC(S), ADD(S), AND(S), B, BIC(S), BL, BX, CMP, CMN,
+ADC(S), ADD(S), AND(S), B, BIC(S), BL, BX, CLZ, CMP, CMN,
 EOR(S), LDM.., LDR(B/T/BT/H/SH/SB), MCR, MLA(S), MOV(S),
 MRC, MRS, MSR, MUL(S), MVN(S), ORR(S),
 RSB(S), RSC(S), SBC(S), SMLAL(S), SMULL(S), STM..,
 STR(B/T/BT/H), SUB(S), SVC/SWI, SWP(B), TEQ, TST, UMLAL(S), UMULL(S)
 
-The DCD, DCDU, DCW, DCWU, DCB and ALIGN directives are supported
+The DCD, DCDU, DCW, DCWU, DCB and ALIGN directives are supported.
 
-Pseudo instruction (like PUSH, ADR etc) are not implemented at the moment.
+The ADR pseudo instruction is now also implemented.
+
+Some other pseudo instruction (like PUSH etc) are not implemented.
 Other instructions may be missing (report if you need one).
 
 The first line of the source is also the entry point of the program.
