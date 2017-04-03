@@ -1,10 +1,11 @@
 import helpers
+import filedict
 
 
 def get_size(name, operands, address):
     """
     name must be the name of a directive or instruction in uppercase, operands the operands, address the address where it is.
-    Return the length of op (in bytes) (assuming passed address),
+    Return the length of op (in bytes) (assuming passed address) and store included files using filedict,
     or return -1 on failure (invalid name)
     """
     if not helpers.is_opname(name):
@@ -20,7 +21,7 @@ def get_size(name, operands, address):
 
 def get_directive_size(name, operands, address):
     """
-    Do not check the syntax or the content, just return how many bytes it will be if it is valid.
+    Do not check the syntax or the content, just return how many bytes it will be if it is valid, and store included files using filedict.
     name must be the name of a directive in uppercase, operands the operands, address the address where it is.
     Return -1 on failure (invalid name).
     """
@@ -55,6 +56,9 @@ def get_directive_size(name, operands, address):
                 size += len(i)
             else:
                 size += 1
+        return size
+    elif name == 'INCBIN':
+        size = filedict.add_file(operands)
         return size
     else:
         return -1

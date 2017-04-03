@@ -3,6 +3,7 @@
 # labels may not have any whitespace before them, instructions have to have whitespace before them
 
 import armasm_new
+import filedict
 
 
 def printerror(filename, linenum, line, msg):
@@ -32,6 +33,7 @@ def assembler(infile, outfile):
     numerrs = 0
     curaddr = 0
     labeldict = {}
+    filedict.set_sourcepath(infile)
     text = gettext(infile)
     code = []
     # create list of Sourceline objects containing the lines of code
@@ -65,7 +67,7 @@ def assembler(infile, outfile):
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    # stage 2: calculate length and address of every instruction
+    # stage 2: calculate length and address of every instruction, read files included with INCBIN
     curaddr = 0
     for i, c in enumerate(code):
         if c.set_length_and_address(curaddr) == -1:

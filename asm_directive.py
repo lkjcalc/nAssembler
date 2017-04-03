@@ -1,4 +1,5 @@
 import helpers
+import filedict
 
 
 def check_directive(name, operands):
@@ -75,6 +76,11 @@ def check_directive(name, operands):
             else:
                 return 'Expected numeric or string literal'
         return ''
+    if name == 'INCBIN':
+        s = filedict.filecontents(operands)
+        if s is None:
+            return 'Could not open file "%s"' % (operands)
+        return ''
     return 'Invalid name (failed in check_directive) (report as bug)'
 
 
@@ -127,4 +133,6 @@ def encode_directive(name, operands, address):
                 i = helpers.numeric_literal_to_int(op)
                 encoded += bytes([i])
         return encoded
+    if name == 'INCBIN':
+        return filedict.filecontents(operands)
     return b''  # should never be reached

@@ -202,7 +202,7 @@ class Sourceline:
     def set_length_and_address(self, address):
         """
         self must be processed by parse_namepart.
-        Set self.address to address and calculate and set self.length.
+        Set self.address to address, calculate and set self.length, store included files in filedict.
         Return 0 on success, -1 on failure.
         """
         self.address = address

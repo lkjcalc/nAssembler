@@ -402,7 +402,7 @@ def is_condcode(s):
 
 def is_directive(s):
     """Return True if s is an (implemented) directive, False otherwise."""
-    directivelist = ['DCD', 'DCDU', 'DCW', 'DCWU', 'ALIGN', 'DCB']
+    directivelist = ['DCD', 'DCDU', 'DCW', 'DCWU', 'ALIGN', 'DCB', 'INCBIN']
     return s.upper() in directivelist
 
 
