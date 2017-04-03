@@ -506,7 +506,7 @@ def is_opname(s):
 
 def is_conditionable(s):
     """Check if s can be conditionally executed. Return True if yes, False if no."""
-    return True
+    return not is_directive(s) and is_opname(s)
 
 
 def is_pseudoinstruction(opname, operands):
