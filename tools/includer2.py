@@ -6,7 +6,7 @@ import os.path
 
 projectdir = '..'
 mainfile = 'calcmain'
-prefiles = ['helpers']
+prefiles = ['helpers', 'filedict']
 postfiles = ['armasm_new', 'assembler']
 outfile = 'bundledmain.py'
 ignorefiles = ['main']

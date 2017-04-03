@@ -5,6 +5,7 @@ def set_sourcepath(path):
     """
     Set the path of the source file which is currently being assembled.
     """
+    global _sourcefolder
     bs = path.rfind('/')
     _sourcefolder = path[:bs+1]
 
