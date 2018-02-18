@@ -28,7 +28,7 @@ def gettext(filename):
 def read_file_and_stage1_parse(infile, filestack=tuple()):
     numerrs = 0
     filedict.set_sourcepath(infile)
-    text = gettext(infile)
+    text = filedict.get_sourcecode()
     code = []
     includedcode = [] # list of (index, code,) tuples
     # create list of Sourceline objects containing the lines of code
