@@ -17,14 +17,6 @@ def printmsg(msg):
     print(msg)
 
 
-def gettext(filename):
-    """Return a list of all lines in the file."""
-    f = open(filename, 'r')
-    text = f.read()
-    f.close()
-    return text.split('\n')
-
-
 def read_file_and_stage1_parse(infile, filestack=tuple()):
     numerrs = 0
     filedict.set_sourcepath(infile)
