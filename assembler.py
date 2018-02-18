@@ -25,17 +25,12 @@ def gettext(filename):
     return text.split('\n')
 
 
-def assembler(infile, outfile):
-    """
-    Assemble infile and write the binary to outfile.
-    Return -1 on failure, 0 on success.
-    """
+def read_file_and_stage1_parse(infile, filestack=tuple()):
     numerrs = 0
-    curaddr = 0
-    labeldict = {}
     filedict.set_sourcepath(infile)
     text = gettext(infile)
     code = []
+    includedcode = [] # list of (index, code,) tuples
     # create list of Sourceline objects containing the lines of code
     for l in text:
         code.append(armasm_new.Sourceline(l))
@@ -63,11 +58,51 @@ def assembler(infile, outfile):
                 printerror(infile, i, c.line, 'unknown error in parse_namepart')
             numerrs += 1
             continue
+        # read binary files included with INCBIN
+        if c.is_incbin():
+            if filedict.add_file(c.operands) < 0:
+                printerror(infile, i, c.line, 'error in add_file')
+                numerrs += 1
+                continue
+        # recursively add INCLUDEd files
+        if c.is_include():
+            incfile = c.operands
+            if incfile in filestack:
+                printerror(infile, i, c.line, 'circular dependence in includes')
+                numerrs += 1
+                continue
+            incnumerrs, inccode = read_file_and_stage1_parse(c.operands, filestack=filestack+(infile,))
+            filedict.set_sourcepath(infile)
+            numerrs += incnumerrs
+            includedcode.append((i,inccode,))
     if numerrs != 0:
+        return numerrs, []
+
+    # concatenate all snippets of the code in this file and the included files
+    fullcode = []
+    currpos = 0
+    for i, cd in includedcode:
+        fullcode += code[currpos:i]
+        fullcode += cd
+        currpos = i+1
+    fullcode += code[currpos:]
+    return numerrs, fullcode
+
+
+def assembler(infile, outfile):
+    """
+    Assemble infile and write the binary to outfile.
+    Return -1 on failure, 0 on success.
+    """
+
+    # extended stage 1: parse comments, labels and operation names, read files included with INCBIN,
+    #                   and recursively do the same for all INCLUDEs
+    numerrs, code = read_file_and_stage1_parse(infile)
+    if numerrs > 0:
         printmsg('Stopping assembler: %i Error(s)' % (numerrs))
         return -1
 
-    # stage 2: calculate length and address of every instruction, read files included with INCBIN
+    # stage 2: calculate length and address of every instruction
     curaddr = 0
     for i, c in enumerate(code):
         if c.set_length_and_address(curaddr) == -1:
@@ -83,6 +118,7 @@ def assembler(infile, outfile):
         return -1
 
     # stage 3: create a dictionary of labels
+    labeldict = {}
     for i, c in enumerate(code):
         if len(c.label) > 0:
             if c.label in labeldict:

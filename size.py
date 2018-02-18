@@ -58,7 +58,7 @@ def get_directive_size(name, operands, address):
                 size += 1
         return size
     elif name == 'INCBIN':
-        size = filedict.add_file(operands)
+        size = filedict.filesize(operands)
         return size
     else:
         return -1

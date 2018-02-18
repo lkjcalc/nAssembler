@@ -199,6 +199,20 @@ class Sourceline:
             return -1
         return 0
 
+    def is_include(self):
+        """
+        self must be process by parse_namepart.
+        Return True if this operation is INCLUDE, False otherwise.
+        """
+        return self.opname in ('INCLUDE', 'GET',)
+
+    def is_incbin(self):
+        """
+        self must be process by parse_namepart.
+        Return True if this operation is INCBIN, False otherwise.
+        """
+        return self.opname == 'INCBIN'
+
     def set_length_and_address(self, address):
         """
         self must be processed by parse_namepart.

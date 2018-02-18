@@ -400,6 +400,11 @@ def is_condcode(s):
     return get_condcode_value(s) != -1
 
 
+def is_preasm_directive(s):
+    predirlist = ['GET', 'INCLUDE']
+    return s.upper() in predirlist
+
+
 def is_directive(s):
     """Return True if s is an (implemented) directive, False otherwise."""
     directivelist = ['DCD', 'DCDU', 'DCW', 'DCWU', 'ALIGN', 'DCB', 'INCBIN']
@@ -498,15 +503,15 @@ def is_miscarithmeticop(s):
 
 def is_opname(s):
     """Return True if s is a valid operation or directive name (full name, i.e. with flags!), False otherwise."""
-    return is_directive(s) or is_dataprocop(s) or is_branchop(s) or is_psrtransop(s) or is_mulop(s)\
-        or is_longmulop(s) or is_swiop(s) or is_singledatatransop(s) or is_halfsigneddatatransop(s)\
+    return is_preasm_directive(s) or is_directive(s) or is_dataprocop(s) or is_branchop(s) or is_psrtransop(s)\
+        or is_mulop(s) or is_longmulop(s) or is_swiop(s) or is_singledatatransop(s) or is_halfsigneddatatransop(s)\
         or is_swapop(s) or is_blockdatatransop(s) or is_coprocregtransop(s) or is_pseudoinstructionop(s)\
         or is_miscarithmeticop(s)
 
 
 def is_conditionable(s):
     """Check if s can be conditionally executed. Return True if yes, False if no."""
-    return not is_directive(s) and is_opname(s)
+    return not (is_preasm_directive(s) or is_directive(s)) and is_opname(s)
 
 
 def is_pseudoinstruction(opname, operands):

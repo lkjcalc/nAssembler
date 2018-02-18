@@ -1,17 +1,19 @@
 _files = {}
 _sourcefolder = None
+_sourcefile = None
 
 def set_sourcepath(path):
     """
     Set the path of the source file which is currently being assembled.
     """
-    global _sourcefolder
+    global _sourcefolder, _sourcefile
+    _sourcefile = path
     bs = path.rfind('/')
     _sourcefolder = path[:bs+1]
 
 def _abspath(curpath, path):
     """
-    Calculate absolute path of path assuming current directory is curpath.
+    Calculate absolute path of path assuming (absolute path of) current directory is curpath.
     """
     if path.startswith('../'):
         parpath = curpath
@@ -55,3 +57,28 @@ def filecontents(path):
     """
     abspath = _abspath(_sourcefolder, path)
     return _files.get(abspath)
+
+def filesize(path):
+    """
+    Return the size of file at path, or None if file is not in filedict.
+    add_file needs to be called on the same file before using this.
+    """
+    abspath = _abspath(_sourcefolder, path)
+    try:
+        return len(_files[abspath])
+    except Exception as e:
+        print(e)
+    return None
+
+def get_sourcecode():
+    """
+    Return the source code in the file last passed to set_sourcepath, or None if file cannot be read.
+    """
+    if _sourcefile:
+        try:
+            with open(_sourcefile, 'r') as f:
+                s = f.read()
+            return s
+        except Exception as e:
+            print(e)
+    return None
