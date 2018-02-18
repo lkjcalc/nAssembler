@@ -13,22 +13,21 @@ def set_sourcepath(path):
 
 def _abspath(curpath, path):
     """
-    Calculate absolute path of path assuming (absolute path of) current directory is curpath.
+    Assuming current directory is curpath, resolve path as far as possible.
     """
     if path.startswith('../'):
-        parpath = curpath
-        while path.startswith('../'):
-            pari = parpath.rfind('/', 0, -1)
-            parpath = parpath[:pari+1]
-            path = path[3:]
-        abspath = parpath + path
+        parpath = curpath[:curpath.rfind('/', 0, -1)+1]
+        if not parpath:
+            return path
+        npath = path[3:]
+        return _abspath(parpath, npath)
     elif path.startswith('./'):
-        abspath = curpath + path[2:]
+        npath = path[2:]
+        return _abspath(parpath, npath)
     elif path.startswith('/'):
-        abspath = path
+        return path
     else:
-        abspath = curpath + path
-    return abspath
+        return curpath + path
 
 def add_file(path):
     """
