@@ -1,0 +1,7 @@
+1. run tools/includer2.py
+-> creates file tools/bundledmain.py containing all code, suitable for usage on calc
+2. copy bundledmain.py to tests
+3. run tests/autotests.py
+-> tests the assembler on all tests
+4. rename bundledmain.py to nAssembler.py.tns, transfer to calc
+

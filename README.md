@@ -33,7 +33,7 @@ MRC, MRS, MSR, MUL(S), MVN(S), ORR(S),
 RSB(S), RSC(S), SBC(S), SMLAL(S), SMULL(S), STM..,
 STR(B/T/BT/H), SUB(S), SVC/SWI, SWP(B), TEQ, TST, UMLAL(S), UMULL(S)
 
-The ALIGN, DCD, DCDU, DCW, DCWU, DCB and INCBIN directives are supported.
+The ALIGN, DCD, DCDU, DCW, DCWU, DCB, INCBIN and INCLUDE directives are supported.
 
 The ADR pseudo instruction is now also implemented.
 
