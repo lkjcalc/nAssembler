@@ -1,7 +1,7 @@
 __pycache__/
 *.bin
 /tools/*
-!/tools/includer2.py
-/tests/testsrc
-/tests/testhashes
+!tools/includer2.py
+/tests/*
+!tests/autotests.py
 
