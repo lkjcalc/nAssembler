@@ -88,7 +88,7 @@ def assembler(infile, outfile):
     Return -1 on failure, 0 on success.
     """
 
-    filedict.set_sourcepath(infile)
+    filedict.set_sourcepath('') # if infile is not an absolute path, it is interpreted relative to current working directory
 
     # extended stage 1: parse comments, labels and operation names, read files included with INCBIN,
     #                   and recursively do the same for all INCLUDEs
