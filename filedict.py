@@ -94,7 +94,7 @@ def get_sourcecode():
         try:
             with open(_sourcefile, 'r') as f:
                 s = f.read()
-            return s
+            return s.split('\n')
         except Exception as e:
             print(e)
     return None
