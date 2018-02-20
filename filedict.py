@@ -32,15 +32,15 @@ def _abspath(curpath, path):
     """
     Assuming current directory is curpath, resolve path as far as possible.
     """
-    if path.startswith('../'):
-        parpath = curpath[:curpath.rfind('/', 0, -1)+1]
-        if not parpath:
-            return path
-        npath = path[3:]
-        return _abspath(parpath, npath)
-    elif path.startswith('./'):
+    if path.startswith('./'):
         npath = path[2:]
         return _abspath(curpath, npath)
+    elif not curpath:
+        return path
+    elif path.startswith('../'):
+        parpath = curpath[:curpath.rfind('/', 0, -1)+1]
+        npath = path[3:]
+        return _abspath(parpath, npath)
     elif path.startswith('/'):
         return path
     else:
