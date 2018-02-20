@@ -40,7 +40,7 @@ def _abspath(curpath, path):
         return _abspath(parpath, npath)
     elif path.startswith('./'):
         npath = path[2:]
-        return _abspath(parpath, npath)
+        return _abspath(curpath, npath)
     elif path.startswith('/'):
         return path
     else:
