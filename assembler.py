@@ -21,6 +21,11 @@ def read_file_and_stage1_parse(infile, filestack=tuple()):
     numerrs = 0
     prevsrcpath = filedict.get_sourcepath()
     filedict.change_sourcepath(infile)
+    infile = filedict.get_sourcepath() # get the full path
+    if infile in filestack:
+        printerror(infile, -1, '', 'file includes itself (possibly indirectly): filestack=%s' % str(filestack))
+        numerrs += 1
+        return numerrs, []
     text = filedict.get_sourcecode()
     code = []
     includedcode = [] # list of (index, code,) tuples
@@ -60,10 +65,6 @@ def read_file_and_stage1_parse(infile, filestack=tuple()):
         # recursively add INCLUDEd files
         if c.is_include():
             incfile = c.operands
-            if incfile in filestack:
-                printerror(infile, i, c.line, 'circular dependence in includes')
-                numerrs += 1
-                continue
             incnumerrs, inccode = read_file_and_stage1_parse(c.operands, filestack=filestack+(infile,))
             numerrs += incnumerrs
             includedcode.append((i,inccode,))
@@ -88,6 +89,7 @@ def assembler(infile, outfile):
     Return -1 on failure, 0 on success.
     """
 
+    # todo set sourcepath to cwd
     filedict.set_sourcepath('') # if infile is not an absolute path, it is interpreted relative to current working directory
 
     # extended stage 1: parse comments, labels and operation names, read files included with INCBIN,
