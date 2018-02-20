@@ -18,7 +18,7 @@ def calculate_md5_of_file(fname):
     with open(srcdir+fname, 'rb') as f:
         binin = f.read()
     return hashlib.md5(binin).hexdigest()
-        
+
 def get_known_md5_of_file(fname):
     try:
         f = open(get_hash_filename(fname))
