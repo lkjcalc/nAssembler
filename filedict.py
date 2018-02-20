@@ -11,6 +11,23 @@ def set_sourcepath(path):
     bs = path.rfind('/')
     _sourcefolder = path[:bs+1]
 
+def get_sourcepath():
+    """
+    Return the path of the source file which is currently being assembled.
+    """
+    return _sourcefile
+
+def change_sourcepath(path):
+    """
+    Change the path of the source file which is currently being assembled.
+    path is taken relative to the current sourcepath.
+    """
+    global _sourcefolder, _sourcefile
+    abspath = _abspath(_sourcefolder, path)
+    _sourcefile = abspath
+    bs = abspath.rfind('/')
+    _sourcefolder = abspath[:bs+1]
+
 def _abspath(curpath, path):
     """
     Assuming current directory is curpath, resolve path as far as possible.

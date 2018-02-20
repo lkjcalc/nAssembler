@@ -19,7 +19,8 @@ def printmsg(msg):
 
 def read_file_and_stage1_parse(infile, filestack=tuple()):
     numerrs = 0
-    filedict.set_sourcepath(infile)
+    prevsrcpath = filedict.get_sourcepath()
+    filedict.change_sourcepath(infile)
     text = filedict.get_sourcecode()
     code = []
     includedcode = [] # list of (index, code,) tuples
@@ -64,9 +65,9 @@ def read_file_and_stage1_parse(infile, filestack=tuple()):
                 numerrs += 1
                 continue
             incnumerrs, inccode = read_file_and_stage1_parse(c.operands, filestack=filestack+(infile,))
-            filedict.set_sourcepath(infile)
             numerrs += incnumerrs
             includedcode.append((i,inccode,))
+    filedict.set_sourcepath(prevsrcpath)
     if numerrs != 0:
         return numerrs, []
 
@@ -86,6 +87,8 @@ def assembler(infile, outfile):
     Assemble infile and write the binary to outfile.
     Return -1 on failure, 0 on success.
     """
+
+    filedict.set_sourcepath(infile)
 
     # extended stage 1: parse comments, labels and operation names, read files included with INCBIN,
     #                   and recursively do the same for all INCLUDEs
