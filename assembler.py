@@ -58,8 +58,10 @@ def read_file_and_stage1_parse(infile, filestack=tuple()):
             continue
         # read binary files included with INCBIN
         if c.is_incbin():
-            if filedict.add_file(c.operands) < 0:
-                printerror(infile, i, c.line, 'error in add_file')
+            size, abspath = add_file(c.operands)
+            c.operands = abspath # need a path which is still correct after changing the source file
+            if size < 0:
+                printerror(infile, i, c.line, "error in add_file for path '%s'" % (abspath,))
                 numerrs += 1
                 continue
         # recursively add INCLUDEd files

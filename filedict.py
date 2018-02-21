@@ -48,13 +48,13 @@ def _abspath(curpath, path):
 
 def add_file(path):
     """
-    Read the file at path, return size or if fails return -1.
+    Read the file at path, return (size, abspath) or if it fails return (-1, abspath).
     set_sourcepath needs to be called at some point before using this function.
     If the same file has been added before, it is not read again, and the same size is returned.
     """
     abspath = _abspath(_sourcefolder, path)
     if abspath in _files:
-        return len(_files[abspath])
+        return len(_files[abspath]), abspath
     try:
         f = open(abspath, 'rb')
         s = f.read()
@@ -62,9 +62,9 @@ def add_file(path):
         size = len(s)
         _files[abspath] = s
     except Exception as e:
-        print(e)
+        print('Caught exception in filedict.add_file(): %s' % (str(e),))
         size = -1
-    return size
+    return size, abspath
 
 def filecontents(path):
     """
@@ -76,15 +76,15 @@ def filecontents(path):
 
 def filesize(path):
     """
-    Return the size of file at path, or None if file is not in filedict.
+    Return the size of file at path, or -1 if file is not in filedict.
     add_file needs to be called on the same file before using this.
     """
     abspath = _abspath(_sourcefolder, path)
     try:
         return len(_files[abspath])
     except Exception as e:
-        print(e)
-    return None
+        print('Caught exception in filedict.filesize(): %s' % (str(e),))
+    return -1
 
 def get_sourcecode():
     """
@@ -96,5 +96,5 @@ def get_sourcecode():
                 s = f.read()
             return s.split('\n')
         except Exception as e:
-            print(e)
+            print('Caught exception in filedict.get_sourcecode(): %s' % (str(e),))
     return None
